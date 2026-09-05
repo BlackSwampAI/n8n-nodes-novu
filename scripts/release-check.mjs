@@ -40,6 +40,7 @@ try {
 	);
 }
 const isTemplateMode = origin === TEMPLATE_ORIGIN;
+const isPrivateInitialization = !isTemplateMode && packageJson.private === true;
 
 for (const path of [
 	'LICENSE.md',
@@ -146,8 +147,8 @@ if (isTemplateMode) {
 	]) {
 		if (!value || hasPlaceholder(value)) fail(`package.json ${label} is missing or a placeholder`);
 	}
-	if (packageJson.private === true)
-		fail('remove private:true only after finalizing release identity');
+	if (isPrivateInitialization && !readme.includes('private scaffold'))
+		fail('private initialization README must identify the package as a private scaffold');
 	if (packageJson.license !== 'MIT' || packageJson.publishConfig?.access !== 'public')
 		fail('normal mode requires MIT and public publish config');
 	if (!packageJson.keywords?.includes('n8n-community-node-package'))
@@ -178,5 +179,7 @@ if (failures.length) {
 console.log(
 	isTemplateMode
 		? 'Template audit passed in fail-closed private mode'
-		: `Release audit passed for ${packageJson.name}@${packageJson.version}`,
+		: isPrivateInitialization
+			? `Fail-closed private Batch 1 initialization audit passed for ${packageJson.name}@${packageJson.version}; npm publication remains blocked`
+			: `Release audit passed for ${packageJson.name}@${packageJson.version}`,
 );

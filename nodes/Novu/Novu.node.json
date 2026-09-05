@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-novu.novu",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/BlackSwampAI/n8n-nodes-novu#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/BlackSwampAI/n8n-nodes-novu"
+			}
+		]
+	}
+}

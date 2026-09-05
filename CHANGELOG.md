@@ -2,4 +2,4 @@
 
 ## Unreleased
 
-- Refresh the raw template with fail-closed publication safety, strict TypeScript/Vitest tests, comprehensive CI, and provenance-ready release guidance.
+- Establish the private Batch 1 Novu package scaffold, API contract inventory, and architecture record.
