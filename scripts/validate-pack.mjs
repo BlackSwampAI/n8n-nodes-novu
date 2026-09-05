@@ -19,6 +19,9 @@ for (const path of files) {
 	if (!['LICENSE.md', 'README.md', 'package.json'].includes(path) && !path.startsWith('dist/')) {
 		failures.push(`unexpected tarball file: ${path}`);
 	}
+	if (/(?:^|\/)(?:example|github)(?:[./_-]|$)/i.test(path)) {
+		failures.push(`template fixture artifact must not be packed: ${path}`);
+	}
 }
 for (const registration of [
 	...(packageJson.n8n?.nodes ?? []),
