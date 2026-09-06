@@ -251,7 +251,8 @@ Batch 9: release-candidate qualification and documentation, including packed ins
 
 ## Raw HTTP response-envelope hardening
 
-- Status: implemented locally on `fix/novu-response-envelopes`; awaiting review
+- Status: implemented on `fix/novu-response-envelopes`; awaiting review
+- Pull request: draft [#10](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/10)
 - Scope: unwrap exactly one Novu ResponseInterceptor `{ data: payload }` layer at ordinary-response call sites for Subscriber, Subscriber Preference, Topic, Notification, and Workflow. Subscriber/Topic cursor lists and Topic Subscription list/mutation envelopes remain direct.
 - User-observed Cloud evidence: live failures exposed a mismatch between the SDK-level payload shapes published in the API reference and raw Cloud HTTP responses wrapped by Novu's global response interceptor. Current Novu source confirms ordinary payload wrapping and the direct treatment of response objects that already contain top-level `data`.
 - Deterministic evidence: fixtures now represent raw wrapped entity, acknowledgment, preference, workflow-list, list-search, and boolean-cancellation responses, including nested custom `data`, empty workflow results, and `false` cancellation. Direct cursor and Topic Subscription envelopes remain covered without an extra unwrap.
