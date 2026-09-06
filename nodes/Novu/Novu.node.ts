@@ -14,7 +14,7 @@ export class Novu implements INodeType {
 		group: ['transform'],
 		version: 1,
 		description: 'Work with the Novu notification platform',
-		subtitle: 'Batch 1 scaffold',
+		subtitle: 'Batch 2 transport foundation',
 		defaults: { name: 'Novu' },
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
@@ -23,7 +23,7 @@ export class Novu implements INodeType {
 		properties: [
 			{
 				displayName:
-					'This Batch 1 scaffold does not expose API operations yet. Subscriber operations begin in Batch 3.',
+					'The Batch 2 credential and transport foundation is ready, but no API operations are exposed yet. Subscriber operations begin in Batch 3.',
 				name: 'batchOneNotice',
 				type: 'notice',
 				default: '',
@@ -34,7 +34,7 @@ export class Novu implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		throw new NodeOperationError(
 			this.getNode(),
-			'No Novu operations are implemented in the Batch 1 scaffold',
+			'No Novu operations are exposed through the Batch 2 transport foundation',
 		);
 	}
 }

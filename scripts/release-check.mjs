@@ -180,6 +180,6 @@ console.log(
 	isTemplateMode
 		? 'Template audit passed in fail-closed private mode'
 		: isPrivateInitialization
-			? `Fail-closed private Batch 1 initialization audit passed for ${packageJson.name}@${packageJson.version}; npm publication remains blocked`
+			? `Fail-closed private initialization audit passed for ${packageJson.name}@${packageJson.version}; npm publication remains blocked`
 			: `Release audit passed for ${packageJson.name}@${packageJson.version}`,
 );

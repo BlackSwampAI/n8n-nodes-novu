@@ -6,7 +6,7 @@ This project is not affiliated with, endorsed by, sponsored by, or maintained by
 
 ## Installation
 
-Installation is intentionally unavailable while the Batch 1 scaffold remains private. A future release will follow the [n8n community-node installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
+Installation is intentionally unavailable while this prerelease package remains private. A future release will follow the [n8n community-node installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
 
 ## Compatibility
 
@@ -17,11 +17,17 @@ Installation is intentionally unavailable while the Batch 1 scaffold remains pri
 
 ## Credentials
 
-The registered **Novu API** credential stores a secret API key and selects the US, EU, or a custom base URL. Novu server API authentication uses `Authorization: ApiKey <secret>`. Its scaffold credential test performs a read-only workflow-list request limited to one result. Robust custom URL validation and diagnostic error mapping are intentionally deferred to Batch 2.
+The registered **Novu API** credential stores a secret API key and selects US (`https://api.novu.co`), EU (`https://eu.api.novu.co`), or a custom base URL. Novu server API authentication uses `Authorization: ApiKey <secret>` and never fails over between regions.
+
+A custom base URL must use HTTPS. It may contain a reverse-proxy path prefix; surrounding whitespace and trailing slashes are normalized. User information, query strings, fragments, malformed URLs, and paths ending in `/v1` or `/v2` are rejected. API versions belong to individual operation routes, which prevents doubled versions. There is no option to disable TLS verification.
+
+The credential test performs `GET /v2/workflows?limit=1`, requiring no subscriber or mutation. It maps 401, 403, 404, and 429 responses to setup guidance. n8n's declarative credential-test mechanism handles connection/DNS/TLS failures with its standard network error rather than this node's richer execution-time mapping; no live credential test has been run for this scaffold.
 
 ## Operations
 
-No API operation is usable in the Batch 1 scaffold. The proposed first-release operations and their documented contracts are tracked in [API coverage](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/API_COVERAGE.md). They will be implemented one reviewed batch at a time.
+No API operation is usable through the Batch 2 transport foundation. The proposed first-release operations and their documented contracts are tracked in [API coverage](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/API_COVERAGE.md). They will be implemented one reviewed batch at a time.
+
+Shared requests use n8n's authenticated HTTP helper, URL-encode every path segment, and map 401, 403, 404, 429 (including `Retry-After` when present), and network failures without copying upstream bodies or secrets into messages. The single retry-policy seam currently permits only `none`; this batch performs no automatic retries.
 
 ## Development
 

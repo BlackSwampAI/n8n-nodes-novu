@@ -36,7 +36,7 @@ describe('private Novu Batch 1 scaffold', () => {
 		]);
 
 		expect(node).not.toContain("name: 'operation'");
-		expect(node).toContain('No Novu operations are implemented');
+		expect(node).toContain('No Novu operations are exposed');
 		expect(readme).toContain('No API operation is usable');
 		expect(status).toContain('Live Novu requests: none');
 	});
@@ -60,7 +60,7 @@ describe('private Novu Batch 1 scaffold', () => {
 			expect(coverage).toContain(contract);
 		}
 		expect(adr).toContain('no runtime dependencies');
-		expect(releaseCheck).toContain('private Batch 1 initialization audit passed');
+		expect(releaseCheck).toContain('private initialization audit passed');
 		expect(packageCheck).toContain('template fixture artifact must not be packed');
 		expect(ci).toContain('branches: [main]');
 		expect(ci).toContain('pull_request:');
