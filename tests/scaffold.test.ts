@@ -28,7 +28,7 @@ describe('private Novu Batch 1 scaffold', () => {
 		});
 	});
 
-	it('advertises only the implemented Subscriber resource', async () => {
+	it('advertises only the implemented Subscriber and Notification resources', async () => {
 		const [node, readme, status] = await Promise.all([
 			read('nodes/Novu/Novu.node.ts'),
 			read('README.md'),
@@ -36,7 +36,7 @@ describe('private Novu Batch 1 scaffold', () => {
 		]);
 
 		expect(node).toContain("value: 'subscriber'");
-		expect(node).not.toContain("value: 'notification'");
+		expect(node).toContain("value: 'notification'");
 		expect(readme).toContain('Create or Update');
 		expect(status).toContain('Live Novu requests: none');
 	});

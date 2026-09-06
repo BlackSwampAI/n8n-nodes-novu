@@ -3,7 +3,7 @@ type UnknownRecord = Record<string, unknown>;
 const asRecord = (value: unknown): UnknownRecord | undefined =>
 	typeof value === 'object' && value !== null ? (value as UnknownRecord) : undefined;
 
-const readStatus = (error: unknown): number | undefined => {
+export const readNovuErrorStatus = (error: unknown): number | undefined => {
 	const root = asRecord(error);
 	const response = asRecord(root?.response);
 	for (const candidate of [
@@ -19,7 +19,7 @@ const readStatus = (error: unknown): number | undefined => {
 	return undefined;
 };
 
-const readRetryAfter = (error: unknown): string | undefined => {
+export const readNovuRetryAfter = (error: unknown): string | undefined => {
 	const root = asRecord(error);
 	const response = asRecord(root?.response);
 	const headers = asRecord(response?.headers) ?? asRecord(root?.headers);
@@ -31,7 +31,7 @@ export const redactSecret = (value: string, secret?: string): string =>
 	secret ? value.split(secret).join('[REDACTED]') : value;
 
 export const describeNovuError = (error: unknown, secret?: string): string => {
-	const status = readStatus(error);
+	const status = readNovuErrorStatus(error);
 	if (status === 401)
 		return 'Novu rejected the credentials. Check the API key and selected region.';
 	if (status === 403)
@@ -39,7 +39,7 @@ export const describeNovuError = (error: unknown, secret?: string): string => {
 	if (status === 404)
 		return 'Novu could not find the resource or route. Check the identifier, region, custom prefix, and API compatibility.';
 	if (status === 429) {
-		const retryAfter = readRetryAfter(error);
+		const retryAfter = readNovuRetryAfter(error);
 		return retryAfter
 			? `Novu rate limit exceeded. Retry-After: ${redactSecret(retryAfter, secret)} seconds.`
 			: 'Novu rate limit exceeded. Retry after the interval supplied by Novu.';

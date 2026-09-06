@@ -33,11 +33,15 @@ The Subscriber resource implements:
 - Update selected fields or explicitly clear them to null
 - Delete
 
-Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Notification, preference, topic, subscription, and workflow operations remain unavailable until their planned batches.
+Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Preference, topic, subscription, workflow discovery, and cancellation operations remain unavailable until their planned batches.
+
+The Notification resource implements **Trigger Workflow** for one external subscriber per input item. It sends the workflow identifier as REST field `name`, the subscriber ID as `to`, and an object payload. The full Novu acknowledgment is preserved, including its transaction ID when returned. An acknowledgment means Novu accepted or reported processing of the request; it does not prove email, SMS, push, or in-app delivery.
+
+Transaction ID and Idempotency Key are separate optional inputs. Transaction ID supports tracing and later cancellation but is not API-boundary deduplication. When enabled for the Novu organization, Idempotency Key caches a request result for a finite 24-hour window. The opt-in retry control requires that key and makes no more than three total attempts for HTTP 408, 409 in-progress, 429, 500/502/503/504, or status-free network/timeout failures. Numeric `Retry-After` values are respected up to 30 seconds; longer values surface an error rather than waiting less than Novu requested. Without `Retry-After`, delays are one then two seconds. Do not combine this policy with n8n node-level retries.
 
 Get Many uses Novu's forward cursor pagination. Novu documents a minimum cursor-list limit of 1 and a maximum of 100, using `/v2/subscribers` as its pagination example; the node requests at most that documented maximum, detects repeated/malformed cursors, and enforces the requested total limit exactly. No automatic retries are performed. All Subscriber behavior is contract-tested with mocks but has not yet been exercised against a live Novu environment.
 
-Shared requests use n8n's authenticated HTTP helper, URL-encode every path segment, and map 401, 403, 404, 429 (including `Retry-After` when present), and network failures without copying upstream bodies or secrets into messages. The single retry-policy seam currently permits only `none`; this batch performs no automatic retries.
+Shared requests use n8n's authenticated HTTP helper, URL-encode every path segment, and map 401, 403, 404, 429 (including `Retry-After` when present), and network failures without copying upstream bodies or secrets into messages. Subscriber calls remain no-retry; only Trigger Workflow can opt into the bounded idempotency-protected policy described above.
 
 ## Development
 
