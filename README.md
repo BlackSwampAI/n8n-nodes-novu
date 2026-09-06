@@ -10,7 +10,7 @@ Installation is intentionally unavailable while this prerelease package remains 
 
 ## Compatibility
 
-- n8n: not yet exercised; the scaffold uses n8n Nodes API version 1 and strict mode
+- n8n: not yet exercised in the editor; the package uses n8n Nodes API version 1 and strict mode
 - Novu Cloud: documented US and EU APIs reviewed on September 5, 2026; not live-tested
 - Self-hosted Novu: unverified; no compatibility version is claimed
 - Node.js development baseline: 22.22.0 or newer
@@ -25,7 +25,17 @@ The credential test performs `GET /v2/workflows?limit=1`, requiring no subscribe
 
 ## Operations
 
-No API operation is usable through the Batch 2 transport foundation. The proposed first-release operations and their documented contracts are tracked in [API coverage](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/API_COVERAGE.md). They will be implemented one reviewed batch at a time.
+The Subscriber resource implements:
+
+- Create or Update, with optional strict duplicate rejection
+- Get by external subscriber ID
+- Get Many with filters, limits, and forward cursor pagination
+- Update selected fields or explicitly clear them to null
+- Delete
+
+Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Notification, preference, topic, subscription, and workflow operations remain unavailable until their planned batches.
+
+Get Many uses Novu's forward cursor pagination. Novu documents a minimum cursor-list limit of 1 and a maximum of 100, using `/v2/subscribers` as its pagination example; the node requests at most that documented maximum, detects repeated/malformed cursors, and enforces the requested total limit exactly. No automatic retries are performed. All Subscriber behavior is contract-tested with mocks but has not yet been exercised against a live Novu environment.
 
 Shared requests use n8n's authenticated HTTP helper, URL-encode every path segment, and map 401, 403, 404, 429 (including `Retry-After` when present), and network failures without copying upstream bodies or secrets into messages. The single retry-policy seam currently permits only `none`; this batch performs no automatic retries.
 
