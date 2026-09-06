@@ -28,13 +28,46 @@ export const notificationProperties: INodeProperties[] = [
 		displayOptions: triggerDisplay,
 	},
 	{
+		displayName: 'Recipient Type',
+		name: 'recipientType',
+		type: 'options',
+		options: [
+			{ name: 'Subscriber', value: 'subscriber' },
+			{ name: 'Topic', value: 'topic' },
+		],
+		default: 'subscriber',
+		description: 'Whether to notify one subscriber or one Novu topic',
+		displayOptions: triggerDisplay,
+	},
+	{
 		displayName: 'External Subscriber ID',
 		name: 'subscriberId',
 		type: 'string',
 		required: true,
 		default: '',
 		description: "The stable subscriberId from your application, not Novu's internal _id",
-		displayOptions: triggerDisplay,
+		displayOptions: {
+			show: {
+				resource: ['notification'],
+				operation: ['triggerWorkflow'],
+				recipientType: ['subscriber'],
+			},
+		},
+	},
+	{
+		displayName: 'Topic Key',
+		name: 'recipientTopicKey',
+		type: 'string',
+		required: true,
+		default: '',
+		description: 'The public key of one Novu topic; Novu performs topic fan-out',
+		displayOptions: {
+			show: {
+				resource: ['notification'],
+				operation: ['triggerWorkflow'],
+				recipientType: ['topic'],
+			},
+		},
 	},
 	{
 		displayName: 'Payload',
