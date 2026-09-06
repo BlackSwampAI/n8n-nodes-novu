@@ -248,3 +248,13 @@ Batch 8: Workflow discovery and pending execution cancellation.
 ## Next batch
 
 Batch 9: release-candidate qualification and documentation, including packed installation in a supported n8n instance plus guarded live/editor evidence when the owner supplies the required environment and credentials.
+
+## Raw HTTP response-envelope hardening
+
+- Status: implemented on `fix/novu-response-envelopes`; awaiting review
+- Pull request: draft [#10](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/10)
+- Scope: unwrap exactly one Novu ResponseInterceptor `{ data: payload }` layer at ordinary-response call sites for Subscriber, Subscriber Preference, Topic, Notification, and Workflow. Subscriber/Topic cursor lists and Topic Subscription list/mutation envelopes remain direct.
+- User-observed Cloud evidence: live failures exposed a mismatch between the SDK-level payload shapes published in the API reference and raw Cloud HTTP responses wrapped by Novu's global response interceptor. Current Novu source confirms ordinary payload wrapping and the direct treatment of response objects that already contain top-level `data`.
+- Deterministic evidence: fixtures now represent raw wrapped entity, acknowledgment, preference, workflow-list, list-search, and boolean-cancellation responses, including nested custom `data`, empty workflow results, and `false` cancellation. Direct cursor and Topic Subscription envelopes remain covered without an extra unwrap.
+- Safety: unwrapping is explicit at affected endpoint call sites and exactly one level deep. Missing or malformed wrappers flow into endpoint-specific validation so execution errors retain n8n item context and do not expose raw response bodies, payloads, credentials, or idempotency keys.
+- Live limitation: no post-fix Cloud retest was performed because the user closed the test instance. Actual n8n editor, pinned self-hosted, delivery, and Creator Portal evidence also remain pending.

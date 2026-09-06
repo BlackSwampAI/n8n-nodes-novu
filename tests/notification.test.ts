@@ -44,6 +44,7 @@ const acknowledgment = (status = 'processed') => ({
 	activityFeedLink: 'https://web.novu.co/activity-feed/tx-1',
 	jobData: {},
 });
+const raw = (data: unknown) => ({ data });
 
 describe('Notification Trigger Workflow', () => {
 	it('advertises trigger and cancellation with required conditional controls', () => {
@@ -67,12 +68,12 @@ describe('Notification Trigger Workflow', () => {
 		[{ mode: 'list', value: 'chosen-workflow' }, 'chosen-workflow'],
 		[{ mode: 'id', value: 'manual-workflow' }, 'manual-workflow'],
 	])('normalizes workflow locator %# into the REST name', async (workflowIdentifier, name) => {
-		const request = vi.fn().mockResolvedValue(acknowledgment());
+		const request = vi.fn().mockResolvedValue(raw(acknowledgment()));
 		await run(makeContext([trigger({ workflowIdentifier })], request));
 		expect(request.mock.calls[0][1].body).toEqual(expect.objectContaining({ name }));
 	});
 	it('keeps saved workflows on subscriber recipients and supports an exact topic recipient', async () => {
-		const request = vi.fn().mockResolvedValue(acknowledgment());
+		const request = vi.fn().mockResolvedValue(raw(acknowledgment()));
 		await run(
 			makeContext(
 				[
@@ -105,7 +106,7 @@ describe('Notification Trigger Workflow', () => {
 			const request = vi
 				.fn()
 				.mockRejectedValueOnce({ statusCode: 408 })
-				.mockResolvedValue(acknowledgment());
+				.mockResolvedValue(raw(acknowledgment()));
 			const promise = run(
 				makeContext(
 					[
@@ -135,7 +136,7 @@ describe('Notification Trigger Workflow', () => {
 
 	it('sends exact v1 REST fields, omits optional values, and preserves the acknowledgment', async () => {
 		const response = acknowledgment();
-		const request = vi.fn().mockResolvedValue(response);
+		const request = vi.fn().mockResolvedValue(raw(response));
 		const output = await run(
 			makeContext(
 				[
@@ -161,11 +162,13 @@ describe('Notification Trigger Workflow', () => {
 	});
 
 	it('resolves distinct optional values for each item and preserves pairing', async () => {
-		const request = vi.fn().mockImplementation(async (_type, options: IHttpRequestOptions) => ({
-			acknowledged: true,
-			status: 'processed',
-			transactionId: (options.body as Record<string, unknown>).transactionId,
-		}));
+		const request = vi.fn().mockImplementation(async (_type, options: IHttpRequestOptions) =>
+			raw({
+				acknowledged: true,
+				status: 'processed',
+				transactionId: (options.body as Record<string, unknown>).transactionId,
+			}),
+		);
 		const output = await run(
 			makeContext(
 				[
@@ -255,18 +258,21 @@ describe('Notification Trigger Workflow', () => {
 			...(status === 'error' ? { error: ['failed'] } : {}),
 		};
 		await expect(
-			run(makeContext([trigger()], vi.fn().mockResolvedValue(response))),
+			run(makeContext([trigger()], vi.fn().mockResolvedValue(raw(response)))),
 		).resolves.toEqual([{ json: response, pairedItem: 0 }]);
 	});
 
 	it('rejects malformed and unknown acknowledgment responses', async () => {
+		await expect(
+			run(makeContext([trigger()], vi.fn().mockResolvedValue({}))),
+		).rejects.toMatchObject({ context: { itemIndex: 0 } });
 		for (const malformed of [
 			{},
 			{ acknowledged: true, status: 'unknown' },
 			{ acknowledged: true, status: 'processed', error: 'bad' },
 		]) {
 			await expect(
-				run(makeContext([trigger()], vi.fn().mockResolvedValue(malformed))),
+				run(makeContext([trigger()], vi.fn().mockResolvedValue(raw(malformed)))),
 			).rejects.toThrow(/malformed|unrecognized/);
 		}
 	});
@@ -337,7 +343,7 @@ describe('Notification Cancel Execution', () => {
 	});
 
 	it.each([true, false])('maps actual cancellation response %s', async (cancelled) => {
-		const request = vi.fn().mockResolvedValue(cancelled);
+		const request = vi.fn().mockResolvedValue(raw(cancelled));
 		await expect(run(makeContext([cancel('tx/a')], request))).resolves.toEqual([
 			{ json: { transactionId: 'tx/a', cancelled }, pairedItem: 0 },
 		]);
@@ -353,12 +359,15 @@ describe('Notification Cancel Execution', () => {
 		await expect(run(makeContext([cancel('')], request))).rejects.toThrow('Transaction ID');
 		expect(request).not.toHaveBeenCalled();
 		await expect(
-			run(makeContext([cancel('tx')], vi.fn().mockResolvedValue({ cancelled: true }))),
+			run(makeContext([cancel('tx')], vi.fn().mockResolvedValue(raw({ cancelled: true })))),
 		).rejects.toThrow('malformed cancellation');
 	});
 
 	it('resolves distinct items and supports continuation', async () => {
-		const request = vi.fn().mockRejectedValueOnce({ statusCode: 404 }).mockResolvedValueOnce(true);
+		const request = vi
+			.fn()
+			.mockRejectedValueOnce({ statusCode: 404 })
+			.mockResolvedValueOnce(raw(true));
 		await expect(
 			run(makeContext([cancel('missing'), cancel('pending')], request, true)),
 		).resolves.toEqual([

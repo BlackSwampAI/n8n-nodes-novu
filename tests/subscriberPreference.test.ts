@@ -28,6 +28,7 @@ const envelope = {
 	global: { enabled: true, channels: { email: true, tool: false }, schedule: { isEnabled: false } },
 	workflows: [{ workflow: { identifier: 'order' }, channels: { sms: false }, overrides: {} }],
 };
+const raw = (data: unknown) => ({ data });
 
 describe('Subscriber Preference metadata', () => {
 	it('exposes Get/Update, six tri-state channels, and conditional workflow reference', () => {
@@ -53,7 +54,7 @@ describe('Subscriber Preference metadata', () => {
 
 describe('Subscriber Preference Get', () => {
 	it('omits optional query and preserves the full response', async () => {
-		const request = vi.fn().mockResolvedValue(envelope);
+		const request = vi.fn().mockResolvedValue(raw(envelope));
 		const output = await run(
 			makeContext(
 				[{ resource: 'subscriberPreference', operation: 'get', subscriberId: 'customer/a' }],
@@ -69,7 +70,7 @@ describe('Subscriber Preference Get', () => {
 	});
 
 	it('includes criticality and context key arrays', async () => {
-		const request = vi.fn().mockResolvedValue(envelope);
+		const request = vi.fn().mockResolvedValue(raw(envelope));
 		await run(
 			makeContext(
 				[
@@ -110,7 +111,7 @@ describe('Subscriber Preference Get', () => {
 
 describe('Subscriber Preference Update', () => {
 	it('omits workflowId globally and sends only changed true/false channels', async () => {
-		const request = vi.fn().mockResolvedValue(envelope);
+		const request = vi.fn().mockResolvedValue(raw(envelope));
 		await run(
 			makeContext(
 				[
@@ -142,7 +143,7 @@ describe('Subscriber Preference Update', () => {
 	});
 
 	it('serializes every documented channel and omits the one marked unchanged', async () => {
-		const request = vi.fn().mockResolvedValue(envelope);
+		const request = vi.fn().mockResolvedValue(raw(envelope));
 		await run(
 			makeContext(
 				[
@@ -178,7 +179,7 @@ describe('Subscriber Preference Update', () => {
 	});
 
 	it('includes an exact workflow reference and resolves two input items', async () => {
-		const request = vi.fn().mockResolvedValue(envelope);
+		const request = vi.fn().mockResolvedValue(raw(envelope));
 		const params = ['workflow-slug', '_internal'].map((workflowReference, index) => ({
 			resource: 'subscriberPreference',
 			operation: 'update',
@@ -231,6 +232,14 @@ describe('Subscriber Preference Update', () => {
 		await expect(
 			run(
 				makeContext(
+					[{ resource: 'subscriberPreference', operation: 'get', subscriberId: 'id' }],
+					vi.fn().mockResolvedValue({}),
+				),
+			),
+		).rejects.toMatchObject({ context: { itemIndex: 0 } });
+		await expect(
+			run(
+				makeContext(
 					[
 						{
 							resource: 'subscriberPreference',
@@ -238,14 +247,14 @@ describe('Subscriber Preference Update', () => {
 							subscriberId: 'id',
 						},
 					],
-					vi.fn().mockResolvedValue({ global: {}, workflows: {} }),
+					vi.fn().mockResolvedValue(raw({ global: {}, workflows: {} })),
 				),
 			),
 		).rejects.toThrow('malformed');
 		const request = vi
 			.fn()
 			.mockRejectedValueOnce({ statusCode: 404 })
-			.mockResolvedValueOnce(envelope);
+			.mockResolvedValueOnce(raw(envelope));
 		const params = ['missing', 'present'].map((subscriberId) => ({
 			resource: 'subscriberPreference',
 			operation: 'get',

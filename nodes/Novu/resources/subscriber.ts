@@ -1,6 +1,7 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
+import { unwrapNovuDataEnvelope } from '../shared/response';
 import { novuApiRequest } from '../shared/transport';
 
 const PROFILE_FIELDS = [
@@ -180,10 +181,23 @@ const executeGetMany = async (
 	return output;
 };
 
-const mapDeleteResponse = (subscriberId: string, response: unknown): IDataObject => {
-	if (isObject(response)) return { ...response, subscriberId };
-	if (typeof response === 'boolean') return { subscriberId, acknowledged: response };
-	return { subscriberId, responseReceived: false };
+const mapDeleteResponse = (
+	context: IExecuteFunctions,
+	subscriberId: string,
+	response: unknown,
+	itemIndex: number,
+): IDataObject => {
+	if (
+		!isObject(response) ||
+		typeof response.acknowledged !== 'boolean' ||
+		typeof response.status !== 'string'
+	)
+		throw localError(
+			context,
+			'Novu returned a malformed subscriber delete acknowledgment',
+			itemIndex,
+		);
+	return { subscriberId, acknowledged: response.acknowledged, status: response.status };
 };
 
 export const executeSubscriberOperation = async (
@@ -197,24 +211,28 @@ export const executeSubscriberOperation = async (
 	if (operation === 'createOrUpdate') {
 		const body = buildSubscriberBody(context, itemIndex, true);
 		const failIfExists = context.getNodeParameter('failIfExists', itemIndex, false) as boolean;
-		const response = await novuApiRequest(context, {
-			method: 'POST',
-			version: 'v2',
-			pathSegments: ['subscribers'],
-			body,
-			...(failIfExists ? { qs: { failIfExists: true } } : {}),
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'POST',
+				version: 'v2',
+				pathSegments: ['subscribers'],
+				body,
+				...(failIfExists ? { qs: { failIfExists: true } } : {}),
+				itemIndex,
+			}),
+		);
 		return [{ json: assertSubscriber(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 
 	if (operation === 'get') {
-		const response = await novuApiRequest(context, {
-			method: 'GET',
-			version: 'v2',
-			pathSegments: ['subscribers', subscriberId],
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'GET',
+				version: 'v2',
+				pathSegments: ['subscribers', subscriberId],
+				itemIndex,
+			}),
+		);
 		return [{ json: assertSubscriber(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 
@@ -227,24 +245,33 @@ export const executeSubscriberOperation = async (
 				itemIndex,
 			);
 		}
-		const response = await novuApiRequest(context, {
-			method: 'PATCH',
-			version: 'v2',
-			pathSegments: ['subscribers', subscriberId],
-			body,
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'PATCH',
+				version: 'v2',
+				pathSegments: ['subscribers', subscriberId],
+				body,
+				itemIndex,
+			}),
+		);
 		return [{ json: assertSubscriber(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 
 	if (operation === 'delete') {
-		const response = await novuApiRequest(context, {
-			method: 'DELETE',
-			version: 'v2',
-			pathSegments: ['subscribers', subscriberId],
-			itemIndex,
-		});
-		return [{ json: mapDeleteResponse(subscriberId, response), pairedItem: itemIndex }];
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'DELETE',
+				version: 'v2',
+				pathSegments: ['subscribers', subscriberId],
+				itemIndex,
+			}),
+		);
+		return [
+			{
+				json: mapDeleteResponse(context, subscriberId, response, itemIndex),
+				pairedItem: itemIndex,
+			},
+		];
 	}
 
 	throw localError(context, `Unsupported Subscriber operation: ${operation}`, itemIndex);
