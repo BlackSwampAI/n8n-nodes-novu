@@ -1,10 +1,12 @@
 import type {
-	IAuthenticateGeneric,
+	IAuthenticate,
 	Icon,
 	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
 } from 'n8n-workflow';
+
+import { resolveNovuBaseUrl } from '../nodes/Novu/shared/url';
 
 export class NovuApi implements ICredentialType {
 	name = 'novuApi';
@@ -53,22 +55,55 @@ export class NovuApi implements ICredentialType {
 		},
 	];
 
-	authenticate: IAuthenticateGeneric = {
-		type: 'generic',
-		properties: {
+	authenticate: IAuthenticate = async (credentials, requestOptions) => {
+		const apiKey = typeof credentials.apiKey === 'string' ? credentials.apiKey.trim() : '';
+		if (!apiKey) throw new Error('Novu API Key is required');
+		return {
+			...requestOptions,
+			baseURL: resolveNovuBaseUrl(credentials),
 			headers: {
-				Authorization: '=ApiKey {{$credentials.apiKey}}',
+				...requestOptions.headers,
+				Authorization: `ApiKey ${apiKey}`,
 			},
-		},
+		};
 	};
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL:
-				'={{$credentials.region === "eu" ? "https://eu.api.novu.co" : $credentials.region === "custom" ? $credentials.customBaseUrl : "https://api.novu.co"}}',
 			url: '/v2/workflows',
 			method: 'GET',
 			qs: { limit: 1 },
 		},
+		rules: [
+			{
+				type: 'responseCode',
+				properties: {
+					value: 401,
+					message: 'Novu rejected the API key. Check the key and selected region.',
+				},
+			},
+			{
+				type: 'responseCode',
+				properties: {
+					value: 403,
+					message: 'The Novu API key lacks permission to list workflows.',
+				},
+			},
+			{
+				type: 'responseCode',
+				properties: {
+					value: 404,
+					message:
+						'The Novu v2 workflow route was not found. Check region, custom prefix, and API compatibility.',
+				},
+			},
+			{
+				type: 'responseCode',
+				properties: {
+					value: 429,
+					message: 'Novu rate limit exceeded. Retry after the interval supplied by Novu.',
+				},
+			},
+		],
 	};
 }
