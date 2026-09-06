@@ -1,0 +1,158 @@
+import type { INodeProperties } from 'n8n-workflow';
+
+const operationDisplay = { show: { resource: ['subscriber'] } };
+const itemOperations = ['createOrUpdate', 'get', 'update', 'delete'];
+const writeOperations = ['createOrUpdate', 'update'];
+
+export const subscriberProperties: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: operationDisplay,
+		options: [
+			{
+				name: 'Create or Update',
+				value: 'createOrUpdate',
+				action: 'Create or update a subscriber',
+			},
+			{ name: 'Delete', value: 'delete', action: 'Delete a subscriber' },
+			{ name: 'Get', value: 'get', action: 'Get a subscriber' },
+			{ name: 'Get Many', value: 'getMany', action: 'Get many subscribers' },
+			{ name: 'Update', value: 'update', action: 'Update a subscriber' },
+		],
+		default: 'createOrUpdate',
+	},
+	{
+		displayName: 'External Subscriber ID',
+		name: 'subscriberId',
+		type: 'string',
+		required: true,
+		default: '',
+		description: "The stable subscriberId from your application, not Novu's internal _id",
+		displayOptions: { show: { resource: ['subscriber'], operation: itemOperations } },
+	},
+	{
+		displayName: 'Fail If Subscriber Exists',
+		name: 'failIfExists',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to request strict creation instead of updating a duplicate subscriber ID',
+		displayOptions: { show: { resource: ['subscriber'], operation: ['createOrUpdate'] } },
+	},
+	{
+		displayName: 'Fields',
+		name: 'fields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['subscriber'], operation: writeOperations } },
+		options: [
+			{ displayName: 'Avatar URL', name: 'avatar', type: 'string', default: '' },
+			{
+				displayName: 'Custom Data',
+				name: 'data',
+				type: 'json',
+				default: '{}',
+				description: 'A JSON object or null',
+			},
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+			},
+			{ displayName: 'First Name', name: 'firstName', type: 'string', default: '' },
+			{ displayName: 'Last Name', name: 'lastName', type: 'string', default: '' },
+			{ displayName: 'Locale', name: 'locale', type: 'string', default: '' },
+			{ displayName: 'Phone', name: 'phone', type: 'string', default: '' },
+			{ displayName: 'Timezone', name: 'timezone', type: 'string', default: '' },
+		],
+	},
+	{
+		displayName: 'Clear Fields',
+		name: 'clearFields',
+		type: 'multiOptions',
+		default: [],
+		description: 'Set selected fields to null. Do not also add them under Fields.',
+		displayOptions: { show: { resource: ['subscriber'], operation: writeOperations } },
+		options: [
+			{ name: 'Avatar URL', value: 'avatar' },
+			{ name: 'Custom Data', value: 'data' },
+			{ name: 'Email', value: 'email' },
+			{ name: 'First Name', value: 'firstName' },
+			{ name: 'Last Name', value: 'lastName' },
+			{ name: 'Locale', value: 'locale' },
+			{ name: 'Phone', value: 'phone' },
+			{ name: 'Timezone', value: 'timezone' },
+		],
+	},
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+		displayOptions: { show: { resource: ['subscriber'], operation: ['getMany'] } },
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		typeOptions: { minValue: 1 },
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: { resource: ['subscriber'], operation: ['getMany'], returnAll: [false] },
+		},
+	},
+	{
+		displayName: 'Filters',
+		name: 'filters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: { show: { resource: ['subscriber'], operation: ['getMany'] } },
+		options: [
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+			},
+			{ displayName: 'Name', name: 'name', type: 'string', default: '' },
+			{ displayName: 'Phone', name: 'phone', type: 'string', default: '' },
+			{ displayName: 'External Subscriber ID', name: 'subscriberId', type: 'string', default: '' },
+		],
+	},
+	{
+		displayName: 'Options',
+		name: 'listOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: { show: { resource: ['subscriber'], operation: ['getMany'] } },
+		options: [
+			{
+				displayName: 'Order By',
+				name: 'orderBy',
+				type: 'string',
+				default: '',
+				description: 'Documented Novu subscriber field to order by',
+			},
+			{
+				displayName: 'Order Direction',
+				name: 'orderDirection',
+				type: 'options',
+				options: [
+					{ name: 'Ascending', value: 'ASC' },
+					{ name: 'Descending', value: 'DESC' },
+				],
+				default: 'DESC',
+			},
+		],
+	},
+];

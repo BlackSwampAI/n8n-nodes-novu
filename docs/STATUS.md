@@ -39,9 +39,11 @@ Batch 2: implement credentials and shared transport, including US/EU/custom host
 
 ## Batch 2: credentials and shared transport
 
-- Status: implemented locally; awaiting orchestrator review
-- Branch: `batch-2-credentials-transport`
-- Pull request: none
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: [#2](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/2)
+- Merge commit: `19974aa`
+- Post-merge main CI: successful ([run 34002613032](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34002613032))
 - Package: remains `n8n-nodes-novu@0.1.0` with `private: true`
 
 ### Completed
@@ -69,3 +71,31 @@ n8n's declarative credential test supports response-code rules, used here for 40
 ## Next batch
 
 Batch 3: subscriber lifecycle. Implement Create or Update, Get, Get Many, Update, and Delete atop the validated transport, preserving per-item expressions, omission/null semantics, pagination, response envelopes, limits, pairing, and continuation behavior.
+
+## Batch 3: subscriber lifecycle
+
+- Status: implemented locally; awaiting orchestrator review
+- Branch: `batch-3-subscriber-lifecycle`
+- Pull request: none
+- Package: remains private `n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Subscriber Create or Update, Get, Get Many, Update, and Delete are the only exposed resource/operations.
+- Common profile fields use typed optional inputs. Custom Data accepts an expression-capable JSON object or null. Explicit Clear Fields sends documented nulls; omission, empty string, false, zero, arrays nested inside data, and nested objects remain distinct.
+- PATCH sends selected fields only and rejects no-op or conflicting update/clear selections locally with item context.
+- Get Many supports documented filters, sorting options, Return All, exact Limit, forward `after` pagination, response-envelope validation, repeated/malformed cursor detection, empty lists, and per-input output pairing. Novu's pagination documentation defines cursor-list limits of 1 through 100 and uses `/v2/subscribers` as its example; requests use that documented maximum.
+- Full subscriber resources are preserved without generic `data` unwrapping. Delete preserves the targeted external ID and documented result, with defensive boolean/empty mappings.
+- Per-item continuation preserves earlier successes and pairing; no rollback or automatic retry is implied.
+
+### Evidence and limitations
+
+- Contract evidence: current official Novu v2 subscriber documentation, reviewed September 5–6, 2026.
+- Deterministic mocks cover all methods/routes, ID encoding, filters/query/body omission, strict duplicate flag, distinct per-item parameters, typed/empty/null/custom-data behavior, invalid JSON/types, stop/continue behavior, single/multi-page lists, exact limits, empty lists, malformed/repeated cursors, pairing, and delete response variants.
+- Local validation on Node 24.18.0: format check, official n8n lint, strict typecheck, 58 Vitest tests, build, private package audit/dry-run boundary, and `git diff --check` passed. The known non-failing upstream `n8n-workflow` missing-sourcemap warnings remain; `NO_COLOR` was unset for the CLI lint as in prior batches.
+- No Novu credential, Cloud request, n8n editor execution, or self-hosted environment was used. Duplicate upsert behavior, actual custom-data merge/replacement, upstream null clearing, credential permissions, and live response/error shapes remain unverified.
+- No notification, preference, topic, subscription, workflow, raw-request, webhook, bulk, channel-credential, or retry capability was added.
+
+## Next batch
+
+Batch 4: Trigger Workflow for one subscriber per input item, building on the proven subscriber and transport behavior while keeping API acknowledgment distinct from delivery and guarding ambiguous retries with separately verified idempotency.

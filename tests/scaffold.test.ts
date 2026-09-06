@@ -28,16 +28,16 @@ describe('private Novu Batch 1 scaffold', () => {
 		});
 	});
 
-	it('does not advertise an unimplemented API operation', async () => {
+	it('advertises only the implemented Subscriber resource', async () => {
 		const [node, readme, status] = await Promise.all([
 			read('nodes/Novu/Novu.node.ts'),
 			read('README.md'),
 			read('docs/STATUS.md'),
 		]);
 
-		expect(node).not.toContain("name: 'operation'");
-		expect(node).toContain('No Novu operations are exposed');
-		expect(readme).toContain('No API operation is usable');
+		expect(node).toContain("value: 'subscriber'");
+		expect(node).not.toContain("value: 'notification'");
+		expect(readme).toContain('Create or Update');
 		expect(status).toContain('Live Novu requests: none');
 	});
 
