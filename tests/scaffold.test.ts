@@ -1,6 +1,7 @@
 // Scaffold invariant tests intentionally inspect repository files.
 // eslint-disable-next-line @n8n/community-nodes/no-restricted-imports
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -16,7 +17,7 @@ describe('private Novu Batch 1 scaffold', () => {
 			n8n: { nodes: string[]; credentials: string[]; strict: boolean };
 		};
 
-		expect(packageJson.name).toBe('n8n-nodes-novu');
+		expect(packageJson.name).toBe('@blackswampai/n8n-nodes-novu');
 		expect(packageJson.private).toBe(true);
 		expect(packageJson.repository.url).toBe('https://github.com/BlackSwampAI/n8n-nodes-novu.git');
 		expect(packageJson.dependencies ?? {}).toEqual({});
@@ -42,13 +43,13 @@ describe('private Novu Batch 1 scaffold', () => {
 	});
 
 	it('records required contract decisions and release controls', async () => {
-		const [coverage, adr, releaseCheck, packageCheck, ci, publish] = await Promise.all([
+		const [coverage, adr, releaseCheck, packageCheck, ci, branding] = await Promise.all([
 			read('docs/API_COVERAGE.md'),
 			read('docs/decisions/0001-node-architecture.md'),
 			read('scripts/release-check.mjs'),
 			read('scripts/validate-pack.mjs'),
 			read('.github/workflows/ci.yml'),
-			read('.github/workflows/publish.yml'),
+			read('docs/branding.md'),
 		]);
 
 		for (const contract of [
@@ -64,6 +65,20 @@ describe('private Novu Batch 1 scaffold', () => {
 		expect(packageCheck).toContain('template fixture artifact must not be packed');
 		expect(ci).toContain('branches: [main]');
 		expect(ci).toContain('pull_request:');
-		expect(publish).toContain("'v*.*.*'");
+		expect(releaseCheck).toContain('CI must run build before');
+		expect(releaseCheck).toContain('publish workflow must remain absent');
+		expect(branding).toContain('dc9caee828136e25db2400433e2f67e2193f964c');
+	});
+
+	it('packages the immutable official Novu adaptive icon for both themes', async () => {
+		const [light, dark, metadata] = await Promise.all([
+			read('nodes/Novu/novu.svg'),
+			read('nodes/Novu/novu.dark.svg'),
+			read('nodes/Novu/Novu.node.json'),
+		]);
+		const expected = '20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8';
+		expect(createHash('sha256').update(light).digest('hex')).toBe(expected);
+		expect(createHash('sha256').update(dark).digest('hex')).toBe(expected);
+		expect(metadata).toContain('@blackswampai/n8n-nodes-novu.novu');
 	});
 });

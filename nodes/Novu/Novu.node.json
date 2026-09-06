@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-novu.novu",
+	"node": "@blackswampai/n8n-nodes-novu.novu",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Communication"],
