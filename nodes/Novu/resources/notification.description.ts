@@ -1,6 +1,8 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { workflowLocator } from './workflow.description';
 
 const triggerDisplay = { show: { resource: ['notification'], operation: ['triggerWorkflow'] } };
+const cancelDisplay = { show: { resource: ['notification'], operation: ['cancelExecution'] } };
 
 export const notificationProperties: INodeProperties[] = [
 	{
@@ -11,6 +13,11 @@ export const notificationProperties: INodeProperties[] = [
 		displayOptions: { show: { resource: ['notification'] } },
 		options: [
 			{
+				name: 'Cancel Execution',
+				value: 'cancelExecution',
+				action: 'Cancel a notification execution',
+			},
+			{
 				name: 'Trigger Workflow',
 				value: 'triggerWorkflow',
 				action: 'Trigger a notification workflow',
@@ -19,13 +26,19 @@ export const notificationProperties: INodeProperties[] = [
 		default: 'triggerWorkflow',
 	},
 	{
-		displayName: 'Workflow Identifier',
-		name: 'workflowIdentifier',
+		...workflowLocator,
+		description: 'The workflow trigger identifier sent as the REST name field',
+		displayOptions: triggerDisplay,
+	},
+	{
+		displayName: 'Transaction ID',
+		name: 'cancelTransactionId',
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The workflow trigger identifier sent as the REST name field',
-		displayOptions: triggerDisplay,
+		description:
+			'Cancels only eligible active or pending work such as delays or digests. Delivered messages cannot be recalled.',
+		displayOptions: cancelDisplay,
 	},
 	{
 		displayName: 'Recipient Type',

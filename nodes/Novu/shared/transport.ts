@@ -3,6 +3,7 @@ import type {
 	IExecuteFunctions,
 	IHttpRequestMethods,
 	IHttpRequestOptions,
+	ILoadOptionsFunctions,
 } from 'n8n-workflow';
 import { NodeOperationError, sleep } from 'n8n-workflow';
 
@@ -28,7 +29,7 @@ export interface NovuRequestOptions {
 }
 
 export const novuApiRequest = async <T>(
-	context: IExecuteFunctions,
+	context: IExecuteFunctions | ILoadOptionsFunctions,
 	options: NovuRequestOptions,
 ): Promise<T> => {
 	if (options.retryPolicy === 'idempotent-trigger') {

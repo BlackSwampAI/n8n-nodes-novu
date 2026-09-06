@@ -16,6 +16,8 @@ import { topicProperties } from './resources/topic.description';
 import { executeTopicOperation } from './resources/topic';
 import { topicSubscriptionProperties } from './resources/topicSubscription.description';
 import { executeTopicSubscriptionOperation } from './resources/topicSubscription';
+import { workflowProperties } from './resources/workflow.description';
+import { executeWorkflowOperation, searchWorkflows } from './resources/workflow';
 
 export class Novu implements INodeType {
 	description: INodeTypeDescription = {
@@ -43,6 +45,7 @@ export class Novu implements INodeType {
 					{ name: 'Subscriber Preference', value: 'subscriberPreference' },
 					{ name: 'Topic', value: 'topic' },
 					{ name: 'Topic Subscription', value: 'topicSubscription' },
+					{ name: 'Workflow', value: 'workflow' },
 				],
 				default: 'subscriber',
 			},
@@ -51,8 +54,11 @@ export class Novu implements INodeType {
 			...subscriberPreferenceProperties,
 			...topicProperties,
 			...topicSubscriptionProperties,
+			...workflowProperties,
 		],
 	};
+
+	methods: INodeType['methods'] = { listSearch: { searchWorkflows } };
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
@@ -71,6 +77,8 @@ export class Novu implements INodeType {
 					output.push(...(await executeTopicOperation(this, operation, itemIndex)));
 				} else if (resource === 'topicSubscription') {
 					output.push(...(await executeTopicSubscriptionOperation(this, operation, itemIndex)));
+				} else if (resource === 'workflow') {
+					output.push(...(await executeWorkflowOperation(this, operation, itemIndex)));
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`, {
 						itemIndex,

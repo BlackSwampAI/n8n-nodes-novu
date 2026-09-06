@@ -2,6 +2,7 @@ import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-wor
 import { NodeOperationError } from 'n8n-workflow';
 
 import { novuApiRequest } from '../shared/transport';
+import { normalizeWorkflowIdentifier } from './workflow';
 
 const TRIGGER_STATUSES = new Set([
 	'error',
@@ -85,13 +86,29 @@ export const executeNotificationOperation = async (
 	operation: string,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> => {
+	if (operation === 'cancelExecution') {
+		const transactionId = requiredString(
+			context,
+			'cancelTransactionId',
+			'Transaction ID',
+			itemIndex,
+		);
+		const response = await novuApiRequest<unknown>(context, {
+			method: 'DELETE',
+			version: 'v1',
+			pathSegments: ['events', 'trigger', transactionId],
+			itemIndex,
+		});
+		if (typeof response !== 'boolean')
+			throw localError(context, 'Novu returned a malformed cancellation response', itemIndex);
+		return [{ json: { transactionId, cancelled: response }, pairedItem: itemIndex }];
+	}
 	if (operation !== 'triggerWorkflow') {
 		throw localError(context, `Unsupported Notification operation: ${operation}`, itemIndex);
 	}
-	const workflowIdentifier = requiredString(
+	const workflowIdentifier = normalizeWorkflowIdentifier(
 		context,
-		'workflowIdentifier',
-		'Workflow Identifier',
+		context.getNodeParameter('workflowIdentifier', itemIndex),
 		itemIndex,
 	);
 	const recipientType = context.getNodeParameter('recipientType', itemIndex, 'subscriber');

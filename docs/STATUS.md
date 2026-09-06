@@ -191,10 +191,13 @@ Batch 7: Topic subscriptions and topic notification delivery.
 
 ## Batch 7: topic subscriptions and topic delivery
 
-- Status: implemented locally after PR #7 private hardening; draft PR awaiting human review
-- Branch: `batch-7-topic-subscriptions`
+- Status: complete and merged
+- Branch: merged into `main`
 - Baseline hardening: [PR #7](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/7), commit `510ec29`, merged to `main`; post-merge CI [run 34025348837](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34025348837) successful
-- Batch 7 pull request: draft [#8](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/8), awaiting human review
+- Batch 7 pull request: merged [#8](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/8)
+- Merge commit: `363f514`
+- Pull-request CI: successful ([run 34054449993](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34054449993))
+- Post-merge main CI: successful ([run 34055128416](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34055128416))
 - Package: private `@blackswampai/n8n-nodes-novu@0.1.0`
 
 ### Delivered
@@ -213,8 +216,35 @@ Batch 7: Topic subscriptions and topic notification delivery.
 - No credentials, live API request, n8n editor execution, Cloud environment, provider delivery observation, or pinned self-hosted environment was used. Auto-create, relationship deletion effects, partial failures, topic fan-out, provider usage/billing, and actual delivery remain live-unverified.
 - The scoped npm name returned `E404` on September 6, 2026; this is availability evidence, not a reservation, and must be rechecked before publication. The canonical homepage `https://blackswampai.com/n8n-nodes/novu/` currently returns HTTP 404 and is an external release blocker.
 - Workspace constructor/icon loading and isolated packed install/load are local package checks, not actual n8n editor or Creator Portal visual evidence. Those visual gates remain pending.
-- Context-scoped subscriptions, conditional/group preferences, bulk/broadcast, and later workflow discovery/cancellation remain deferred.
+- Context-scoped subscriptions, conditional/group preferences, and bulk/broadcast remain deferred.
 
 ## Next batch
 
 Batch 8: Workflow discovery and pending execution cancellation.
+
+## Batch 8: workflow discovery and pending execution cancellation
+
+- Status: implemented locally; awaiting orchestrator and human review
+- Branch: `batch-8-workflow-discovery-cancellation`
+- Pull request: draft [#9](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/9), awaiting human review
+- Base commit: `363f5140e129362fd8c1ed71a8d118a990fa8fef`
+- Package: remains private `@blackswampai/n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Workflow exposes Get and Get Many only. Get accepts saved string and From List/By ID locator shapes for the public trigger-facing `workflowId`; full workflow responses preserve internal `_id` as a distinct field.
+- Get Many supports Return All/exact Limit, query/status/tag/order controls, offset/limit pages of at most 100, empty output, full workflow pairing, malformed-envelope validation, and no-progress protection.
+- Trigger Workflow now uses the same searchable, paginated locator while preserving old saved string values. Search results use `workflowId`, never internal `_id`; manual entry remains executable if list permissions fail.
+- Notification adds Cancel Execution by encoded transaction ID. It returns the target ID plus Novu's actual boolean and uses no retry or idempotency header. Only eligible active/pending work such as delays or digests can be cancelled; delivered messages cannot be recalled.
+
+### Evidence and limitations
+
+- Contract evidence: official Novu Workflow list/retrieve and event-cancellation documentation confirmed September 6, 2026.
+- Deterministic mocks cover exact metadata, locator normalization and blank states, trigger selection, workflow retrieval, list filters/ordering/multipage limits/empty/malformed/no-progress behavior, per-item pairing/continuation, list-search filtering/tokens/results/errors, and cancellation true/false/encoding/errors.
+- Local validation on Node 24.18.0: format/write and format check, official n8n lint, strict production/test typecheck, 159 Vitest tests across 11 files, build, official source/built scanner, private release audit, package boundary (57 files, 35,087 packed bytes, 187,983 unpacked bytes), workspace constructor/icon load, and `git diff --check` passed. The orchestrator ran `npm run smoke:install` outside the managed sandbox; compiled registration of exactly 1 node and 1 credential passed, followed by the isolated packed-package install/load. Known upstream `n8n-workflow` missing-sourcemap warnings remain non-failing advisories.
+- No credentials, live Novu API request, actual n8n editor execution, Cloud or pinned self-hosted environment, delivery observation, or Creator Portal check was performed. Endpoint permissions, observed paging, cancellation eligibility, editor locator rendering, and self-hosted compatibility remain unverified.
+- The scoped npm name still requires a prepublication recheck. The canonical homepage `https://blackswampai.com/n8n-nodes/novu/` remains recorded as HTTP 404 and blocks release preparation.
+
+## Next batch
+
+Batch 9: release-candidate qualification and documentation, including packed installation in a supported n8n instance plus guarded live/editor evidence when the owner supplies the required environment and credentials.
