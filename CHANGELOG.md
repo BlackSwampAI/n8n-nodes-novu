@@ -6,3 +6,4 @@
 - Add the Batch 2 credential and shared transport foundation.
 - Add the Batch 3 Subscriber lifecycle operations with explicit partial updates and cursor pagination.
 - Add the Batch 4 Trigger Workflow notification action and opt-in idempotency-protected retries.
+- Add Batch 5 global and workflow-specific Subscriber Preference Get and Update operations.
