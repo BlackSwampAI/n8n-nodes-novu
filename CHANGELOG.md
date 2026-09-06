@@ -5,3 +5,4 @@
 - Establish the private Batch 1 Novu package scaffold, API contract inventory, and architecture record.
 - Add the Batch 2 credential and shared transport foundation.
 - Add the Batch 3 Subscriber lifecycle operations with explicit partial updates and cursor pagination.
+- Add the Batch 4 Trigger Workflow notification action and opt-in idempotency-protected retries.

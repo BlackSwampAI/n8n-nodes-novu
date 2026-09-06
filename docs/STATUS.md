@@ -74,9 +74,11 @@ Batch 3: subscriber lifecycle. Implement Create or Update, Get, Get Many, Update
 
 ## Batch 3: subscriber lifecycle
 
-- Status: implemented locally; awaiting orchestrator review
-- Branch: `batch-3-subscriber-lifecycle`
-- Pull request: none
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: [#3](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/3)
+- Merge commit: `7c309cd`
+- Post-merge main CI: successful ([run 34004387149](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34004387149))
 - Package: remains private `n8n-nodes-novu@0.1.0`
 
 ### Delivered
@@ -99,3 +101,30 @@ Batch 3: subscriber lifecycle. Implement Create or Update, Get, Get Many, Update
 ## Next batch
 
 Batch 4: Trigger Workflow for one subscriber per input item, building on the proven subscriber and transport behavior while keeping API acknowledgment distinct from delivery and guarding ambiguous retries with separately verified idempotency.
+
+## Batch 4: trigger a workflow for a subscriber
+
+- Status: implemented locally; awaiting orchestrator review
+- Branch: `batch-4-trigger-workflow`
+- Pull request: none
+- Package: remains private `n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Notification exposes only Trigger Workflow. It posts `name`, string `to`, and object `payload` to `/v1/events/trigger`, with optional Transaction ID and Idempotency Key kept distinct.
+- Required identifiers and payloads are validated per input item. Optional empty values are omitted, and full valid Novu acknowledgments are preserved without claiming channel delivery.
+- The opt-in idempotent-trigger retry policy makes at most three total attempts for 408, 409 in-progress, 429, 500/502/503/504, and status-free network/timeout failures. Other 4xx responses, including changed-body key reuse at 422, are not retried.
+- Numeric `Retry-After` is honored through a conservative 30-second package cap; a longer server interval surfaces an error instead of sleeping less than requested. Missing intervals use deterministic one- and two-second delays. Subscriber operations retain the default no-retry policy.
+
+### Evidence and limitations
+
+- Contract evidence: current official Novu event-trigger, idempotency, error, and rate-limit documentation reviewed September 5–6, 2026.
+- Deterministic mocks cover v1 request construction, optional omission, distinct per-item values and pairing, JSON validation, acknowledgment schemas/statuses, terminal errors, continuation, all retry categories, Retry-After, the attempt ceiling, identical request reuse, and exhaustion.
+- Local validation on Node 24.18.0: format check, official n8n lint, strict typecheck, 95 Vitest tests, build, private package audit/dry-run boundary, and `git diff --check` passed. Known non-failing upstream `n8n-workflow` missing-sourcemap warnings remain; `NO_COLOR` was unset for CLI lint.
+- No Novu credential, Cloud request, n8n editor execution, provider inbox/activity inspection, or self-hosted environment was used. The first real end-to-end notification milestone remains blocked on an owner-controlled credential and development workflow. Acceptance versus actual channel delivery is therefore not observed.
+- Novu API idempotency is not enabled for every organization. The 24-hour cache is finite, Transaction ID is not equivalent atomic/API-boundary deduplication, and users must not stack this package policy with n8n node-level retries.
+- Topic recipients, bulk/broadcast, cancellation, workflow discovery, and all later resources remain unavailable.
+
+## Next batch
+
+Batch 5: Subscriber Preferences, preserving unchanged/enabled/disabled distinctions and unrelated settings.

@@ -8,6 +8,8 @@ import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
 import { subscriberProperties } from './resources/subscriber.description';
 import { executeSubscriberOperation } from './resources/subscriber';
+import { notificationProperties } from './resources/notification.description';
+import { executeNotificationOperation } from './resources/notification';
 
 export class Novu implements INodeType {
 	description: INodeTypeDescription = {
@@ -29,10 +31,14 @@ export class Novu implements INodeType {
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
-				options: [{ name: 'Subscriber', value: 'subscriber' }],
+				options: [
+					{ name: 'Notification', value: 'notification' },
+					{ name: 'Subscriber', value: 'subscriber' },
+				],
 				default: 'subscriber',
 			},
 			...subscriberProperties,
+			...notificationProperties,
 		],
 	};
 
@@ -43,12 +49,15 @@ export class Novu implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', itemIndex) as string;
 				const operation = this.getNodeParameter('operation', itemIndex) as string;
-				if (resource !== 'subscriber') {
+				if (resource === 'subscriber') {
+					output.push(...(await executeSubscriberOperation(this, operation, itemIndex)));
+				} else if (resource === 'notification') {
+					output.push(...(await executeNotificationOperation(this, operation, itemIndex)));
+				} else {
 					throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`, {
 						itemIndex,
 					});
 				}
-				output.push(...(await executeSubscriberOperation(this, operation, itemIndex)));
 			} catch (error) {
 				if (!this.continueOnFail()) {
 					throw new NodeOperationError(this.getNode(), error, { itemIndex });
