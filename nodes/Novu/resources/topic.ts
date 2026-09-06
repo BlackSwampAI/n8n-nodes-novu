@@ -1,6 +1,7 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
+import { unwrapNovuDataEnvelope } from '../shared/response';
 import { novuApiRequest } from '../shared/transport';
 
 interface CursorEnvelope {
@@ -184,45 +185,53 @@ export const executeTopicOperation = async (
 		const strict = context.getNodeParameter('failIfExists', itemIndex, false);
 		if (typeof strict !== 'boolean')
 			throw localError(context, 'Fail If Topic Exists must be a boolean', itemIndex);
-		const response = await novuApiRequest(context, {
-			method: 'POST',
-			version: 'v2',
-			pathSegments: ['topics'],
-			body,
-			...(strict ? { qs: { failIfExists: true } } : {}),
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'POST',
+				version: 'v2',
+				pathSegments: ['topics'],
+				body,
+				...(strict ? { qs: { failIfExists: true } } : {}),
+				itemIndex,
+			}),
+		);
 		return [{ json: assertTopic(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 	if (operation === 'get') {
-		const response = await novuApiRequest(context, {
-			method: 'GET',
-			version: 'v2',
-			pathSegments: ['topics', key],
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'GET',
+				version: 'v2',
+				pathSegments: ['topics', key],
+				itemIndex,
+			}),
+		);
 		return [{ json: assertTopic(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 	if (operation === 'update') {
 		const name = validName(context, context.getNodeParameter('topicName', itemIndex), itemIndex);
 		if (name.length === 0)
 			throw localError(context, 'Display Name must be non-empty when updating a topic', itemIndex);
-		const response = await novuApiRequest(context, {
-			method: 'PATCH',
-			version: 'v2',
-			pathSegments: ['topics', key],
-			body: { name },
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest(context, {
+				method: 'PATCH',
+				version: 'v2',
+				pathSegments: ['topics', key],
+				body: { name },
+				itemIndex,
+			}),
+		);
 		return [{ json: assertTopic(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 	if (operation === 'delete') {
-		const response = await novuApiRequest<unknown>(context, {
-			method: 'DELETE',
-			version: 'v2',
-			pathSegments: ['topics', key],
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest<unknown>(context, {
+				method: 'DELETE',
+				version: 'v2',
+				pathSegments: ['topics', key],
+				itemIndex,
+			}),
+		);
 		if (!isObject(response) || typeof response.acknowledged !== 'boolean')
 			throw localError(context, 'Novu returned a malformed topic delete acknowledgment', itemIndex);
 		return [

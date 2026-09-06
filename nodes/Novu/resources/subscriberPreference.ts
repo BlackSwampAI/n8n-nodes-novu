@@ -1,6 +1,7 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
+import { unwrapNovuDataEnvelope } from '../shared/response';
 import { novuApiRequest } from '../shared/transport';
 
 const CHANNELS = ['email', 'sms', 'in_app', 'push', 'chat', 'tool'] as const;
@@ -46,13 +47,15 @@ export const executeSubscriberPreferenceOperation = async (
 		const qs: IDataObject = {};
 		if (criticality) qs.criticality = criticality;
 		if (contextKeys.length) qs.contextKeys = contextKeys;
-		const response = await novuApiRequest<unknown>(context, {
-			method: 'GET',
-			version: 'v2',
-			pathSegments: ['subscribers', id, 'preferences'],
-			...(Object.keys(qs).length ? { qs } : {}),
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest<unknown>(context, {
+				method: 'GET',
+				version: 'v2',
+				pathSegments: ['subscribers', id, 'preferences'],
+				...(Object.keys(qs).length ? { qs } : {}),
+				itemIndex,
+			}),
+		);
 		return [{ json: assertPreferences(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 	if (operation === 'update') {
@@ -78,13 +81,15 @@ export const executeSubscriberPreferenceOperation = async (
 				throw localError(context, 'Workflow Reference must be a non-empty string', itemIndex);
 			body.workflowId = reference;
 		}
-		const response = await novuApiRequest<unknown>(context, {
-			method: 'PATCH',
-			version: 'v2',
-			pathSegments: ['subscribers', id, 'preferences'],
-			body,
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest<unknown>(context, {
+				method: 'PATCH',
+				version: 'v2',
+				pathSegments: ['subscribers', id, 'preferences'],
+				body,
+				itemIndex,
+			}),
+		);
 		return [{ json: assertPreferences(context, response, itemIndex), pairedItem: itemIndex }];
 	}
 	throw localError(context, `Unsupported Subscriber Preference operation: ${operation}`, itemIndex);

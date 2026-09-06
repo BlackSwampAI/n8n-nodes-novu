@@ -24,6 +24,7 @@ const context = (
 const run = async (ctx: IExecuteFunctions): Promise<INodeExecutionData[]> =>
 	(await new Novu().execute.call(ctx))[0];
 const topic = (key: string) => ({ _id: `internal-${key}`, key, name: key, data: { count: 0 } });
+const raw = (data: unknown) => ({ data });
 const envelope = (data: Record<string, unknown>[], next: string | null = null) => ({
 	data,
 	next,
@@ -51,10 +52,12 @@ describe('Topic metadata and item operations', () => {
 	});
 
 	it('creates two distinct topics and omits or sends strict query', async () => {
-		const request = vi.fn(async (_type, options: IHttpRequestOptions) => ({
-			_id: 'id',
-			...(options.body as object),
-		}));
+		const request = vi.fn(async (_type, options: IHttpRequestOptions) =>
+			raw({
+				_id: 'id',
+				...(options.body as object),
+			}),
+		);
 		const output = await run(
 			context(
 				[
@@ -81,10 +84,12 @@ describe('Topic metadata and item operations', () => {
 	});
 
 	it('supports null data and rejects invalid, nested, non-string arrays, and oversize data', async () => {
-		const request = vi.fn(async (_type, options: IHttpRequestOptions) => ({
-			_id: 'id',
-			...(options.body as object),
-		}));
+		const request = vi.fn(async (_type, options: IHttpRequestOptions) =>
+			raw({
+				_id: 'id',
+				...(options.body as object),
+			}),
+		);
 		await expect(
 			run(context([params('createOrUpdate', { topicFields: { data: 'null' } })], request)),
 		).resolves.toEqual([
@@ -113,7 +118,7 @@ describe('Topic metadata and item operations', () => {
 
 	it('counts display-name limits by Unicode code points', async () => {
 		const name = '🚀'.repeat(100);
-		const request = vi.fn().mockResolvedValue(topic('key'));
+		const request = vi.fn().mockResolvedValue(raw(topic('key')));
 		await expect(
 			run(context([params('update', { topicName: name })], request)),
 		).resolves.toHaveLength(1);
@@ -121,7 +126,10 @@ describe('Topic metadata and item operations', () => {
 	});
 
 	it('gets an encoded key preserving data and updates name only', async () => {
-		const request = vi.fn().mockResolvedValueOnce(topic('a/b')).mockResolvedValueOnce(topic('a/b'));
+		const request = vi
+			.fn()
+			.mockResolvedValueOnce(raw(topic('a/b')))
+			.mockResolvedValueOnce(raw(topic('a/b')));
 		await run(
 			context(
 				[
@@ -145,24 +153,24 @@ describe('Topic metadata and item operations', () => {
 		])
 			await expect(run(context([input], vi.fn()))).rejects.toThrow();
 		await expect(
-			run(context([params('get')], vi.fn().mockResolvedValue({ key: 'key' }))),
+			run(context([params('get')], vi.fn().mockResolvedValue(raw({ key: 'key' })))),
 		).rejects.toThrow('malformed topic');
 	});
 
 	it.each([[true], [false]])('maps delete acknowledgment %s honestly', async (acknowledged) => {
 		await expect(
-			run(context([params('delete')], vi.fn().mockResolvedValue({ acknowledged }))),
+			run(context([params('delete')], vi.fn().mockResolvedValue(raw({ acknowledged })))),
 		).resolves.toEqual([{ json: { topicKey: 'key', acknowledged }, pairedItem: 0 }]);
 	});
 
 	it('rejects malformed delete and continues after missing topic', async () => {
-		await expect(run(context([params('delete')], vi.fn().mockResolvedValue({})))).rejects.toThrow(
-			'malformed',
-		);
+		await expect(
+			run(context([params('delete')], vi.fn().mockResolvedValue(raw({})))),
+		).rejects.toThrow('malformed');
 		const request = vi
 			.fn()
 			.mockRejectedValueOnce({ statusCode: 404 })
-			.mockResolvedValueOnce(topic('ok'));
+			.mockResolvedValueOnce(raw(topic('ok')));
 		await expect(
 			run(
 				context(

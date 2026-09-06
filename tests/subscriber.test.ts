@@ -27,6 +27,7 @@ const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> =>
 	(await new Novu().execute.call(context))[0];
 
 const subscriber = (subscriberId: string) => ({ subscriberId, data: { active: false, score: 0 } });
+const raw = (data: unknown) => ({ data });
 
 const envelope = (data: Record<string, unknown>[], next: string | null = null) => ({
 	data,
@@ -38,7 +39,7 @@ const envelope = (data: Record<string, unknown>[], next: string | null = null) =
 
 describe('Subscriber create or update', () => {
 	it('resolves distinct items, preserves JSON values, and links output', async () => {
-		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => options.body);
+		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => raw(options.body));
 		const context = makeContext(
 			[
 				{
@@ -130,7 +131,7 @@ describe('Subscriber create or update', () => {
 	});
 
 	it('accepts explicit null custom data', async () => {
-		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => options.body);
+		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => raw(options.body));
 		const output = await run(
 			makeContext(
 				[
@@ -152,7 +153,7 @@ describe('Subscriber create or update', () => {
 describe('Subscriber get and update', () => {
 	it('gets an encoded external ID without unwrapping subscriber custom data', async () => {
 		const response = { subscriberId: 'customer/a', data: { data: 'custom' } };
-		const request = vi.fn().mockResolvedValue(response);
+		const request = vi.fn().mockResolvedValue(raw(response));
 		const output = await run(
 			makeContext(
 				[{ resource: 'subscriber', operation: 'get', subscriberId: 'customer/a' }],
@@ -184,10 +185,12 @@ describe('Subscriber get and update', () => {
 	});
 
 	it('patches only selected and explicitly null-cleared fields', async () => {
-		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => ({
-			subscriberId: 'id',
-			...(options.body as object),
-		}));
+		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) =>
+			raw({
+				subscriberId: 'id',
+				...(options.body as object),
+			}),
+		);
 		await run(
 			makeContext(
 				[
@@ -272,7 +275,7 @@ describe('Subscriber get and update', () => {
 		];
 		const request = vi.fn(async (_type: string, options: IHttpRequestOptions) => {
 			if (options.url.endsWith('/missing')) throw { statusCode: 404 };
-			return subscriber('present');
+			return raw(subscriber('present'));
 		});
 		await expect(run(makeContext(parameters, request))).rejects.toThrow('resource or route');
 		await expect(run(makeContext(parameters, request, true))).resolves.toEqual([
@@ -390,20 +393,27 @@ describe('Subscriber get many', () => {
 });
 
 describe('Subscriber delete', () => {
-	it.each([
-		[
-			{ acknowledged: true, status: 'success' },
-			{ subscriberId: 'id', acknowledged: true, status: 'success' },
-		],
-		[true, { subscriberId: 'id', acknowledged: true }],
-		[undefined, { subscriberId: 'id', responseReceived: false }],
-	])('maps the actual mutation response defensively', async (response, expected) => {
+	it('maps the wrapped mutation acknowledgment without leaking its transport envelope', async () => {
+		const response = raw({ acknowledged: true, status: 'success' });
 		const request = vi.fn().mockResolvedValue(response);
 		expect(
 			await run(
 				makeContext([{ resource: 'subscriber', operation: 'delete', subscriberId: 'id' }], request),
 			),
-		).toEqual([{ json: expected, pairedItem: 0 }]);
+		).toEqual([
+			{ json: { subscriberId: 'id', acknowledged: true, status: 'success' }, pairedItem: 0 },
+		]);
 		expect(request).toHaveBeenCalledWith('novuApi', expect.objectContaining({ method: 'DELETE' }));
+	});
+
+	it.each([{}, raw({}), raw(true)])('rejects malformed delete envelopes %#', async (response) => {
+		await expect(
+			run(
+				makeContext(
+					[{ resource: 'subscriber', operation: 'delete', subscriberId: 'id' }],
+					vi.fn().mockResolvedValue(response),
+				),
+			),
+		).rejects.toThrow(/malformed/);
 	});
 });

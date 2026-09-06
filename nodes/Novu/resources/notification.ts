@@ -1,6 +1,7 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
+import { unwrapNovuDataEnvelope } from '../shared/response';
 import { novuApiRequest } from '../shared/transport';
 import { normalizeWorkflowIdentifier } from './workflow';
 
@@ -93,12 +94,14 @@ export const executeNotificationOperation = async (
 			'Transaction ID',
 			itemIndex,
 		);
-		const response = await novuApiRequest<unknown>(context, {
-			method: 'DELETE',
-			version: 'v1',
-			pathSegments: ['events', 'trigger', transactionId],
-			itemIndex,
-		});
+		const response = unwrapNovuDataEnvelope(
+			await novuApiRequest<unknown>(context, {
+				method: 'DELETE',
+				version: 'v1',
+				pathSegments: ['events', 'trigger', transactionId],
+				itemIndex,
+			}),
+		);
 		if (typeof response !== 'boolean')
 			throw localError(context, 'Novu returned a malformed cancellation response', itemIndex);
 		return [{ json: { transactionId, cancelled: response }, pairedItem: itemIndex }];
@@ -153,14 +156,16 @@ export const executeNotificationOperation = async (
 
 	const body: IDataObject = { name: workflowIdentifier, to, payload };
 	if (transactionId) body.transactionId = transactionId;
-	const response = await novuApiRequest<unknown>(context, {
-		method: 'POST',
-		version: 'v1',
-		pathSegments: ['events', 'trigger'],
-		body,
-		...(idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : {}),
-		retryPolicy: retry ? 'idempotent-trigger' : 'none',
-		itemIndex,
-	});
+	const response = unwrapNovuDataEnvelope(
+		await novuApiRequest<unknown>(context, {
+			method: 'POST',
+			version: 'v1',
+			pathSegments: ['events', 'trigger'],
+			body,
+			...(idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : {}),
+			retryPolicy: retry ? 'idempotent-trigger' : 'none',
+			itemIndex,
+		}),
+	);
 	return [{ json: assertTriggerResponse(context, response, itemIndex), pairedItem: itemIndex }];
 };

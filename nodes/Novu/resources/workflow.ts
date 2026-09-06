@@ -7,6 +7,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
+import { unwrapNovuDataEnvelope } from '../shared/response';
 import { novuApiRequest } from '../shared/transport';
 import { WORKFLOW_STATUS_OPTIONS } from './workflow.description';
 
@@ -143,13 +144,15 @@ const getMany = async (context: IExecuteFunctions, itemIndex: number) => {
 		const pageLimit = Number.isFinite(remaining) ? Math.min(remaining, PAGE_SIZE) : PAGE_SIZE;
 		const response = assertWorkflowList(
 			context,
-			await novuApiRequest(context, {
-				method: 'GET',
-				version: 'v2',
-				pathSegments: ['workflows'],
-				qs: { ...qs, offset, limit: pageLimit },
-				itemIndex,
-			}),
+			unwrapNovuDataEnvelope(
+				await novuApiRequest(context, {
+					method: 'GET',
+					version: 'v2',
+					pathSegments: ['workflows'],
+					qs: { ...qs, offset, limit: pageLimit },
+					itemIndex,
+				}),
+			),
 			pageLimit,
 			itemIndex,
 		);
@@ -176,12 +179,14 @@ export const executeWorkflowOperation = async (
 		context.getNodeParameter('workflowIdentifier', itemIndex),
 		itemIndex,
 	);
-	const response = await novuApiRequest(context, {
-		method: 'GET',
-		version: 'v2',
-		pathSegments: ['workflows', workflowId],
-		itemIndex,
-	});
+	const response = unwrapNovuDataEnvelope(
+		await novuApiRequest(context, {
+			method: 'GET',
+			version: 'v2',
+			pathSegments: ['workflows', workflowId],
+			itemIndex,
+		}),
+	);
 	return [{ json: assertWorkflow(context, response, itemIndex), pairedItem: itemIndex }];
 };
 
@@ -201,12 +206,14 @@ export async function searchWorkflows(
 		throw localError(this, 'Workflow search pagination token is invalid');
 	const response = assertWorkflowList(
 		this,
-		await novuApiRequest(this, {
-			method: 'GET',
-			version: 'v2',
-			pathSegments: ['workflows'],
-			qs: { limit: PAGE_SIZE, offset, ...(filter ? { query: filter } : {}) },
-		}),
+		unwrapNovuDataEnvelope(
+			await novuApiRequest(this, {
+				method: 'GET',
+				version: 'v2',
+				pathSegments: ['workflows'],
+				qs: { limit: PAGE_SIZE, offset, ...(filter ? { query: filter } : {}) },
+			}),
+		),
 		PAGE_SIZE,
 	);
 	const nextOffset = offset + response.workflows.length;

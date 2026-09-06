@@ -9,8 +9,10 @@ const workflow = (id: string, name = `Workflow ${id}`) => ({
 	workflowId: id,
 	name,
 	steps: [],
+	data: { nested: { enabled: false } },
 });
-const list = (workflows: Params[], totalCount = workflows.length) => ({ workflows, totalCount });
+const raw = (data: unknown) => ({ data });
+const list = (workflows: Params[], totalCount = workflows.length) => raw({ workflows, totalCount });
 const context = (
 	parameters: Params[],
 	request: (type: string, options: IHttpRequestOptions) => Promise<unknown>,
@@ -63,7 +65,7 @@ describe('Workflow metadata and Get', () => {
 		[{ mode: 'id', value: 'manual/id' }, 'manual/id'],
 	])('gets and preserves a full workflow from %#', async (locator, id) => {
 		const response = workflow(id as string);
-		const request = vi.fn().mockResolvedValue(response);
+		const request = vi.fn().mockResolvedValue(raw(response));
 		await expect(
 			run(
 				context([{ resource: 'workflow', operation: 'get', workflowIdentifier: locator }], request),
@@ -286,6 +288,12 @@ describe('Workflow list search', () => {
 		expect(result).toEqual({
 			results: [{ name: 'Welcome (first)', value: 'first' }],
 			paginationToken: '3',
+		});
+	});
+
+	it('returns an empty result for a wrapped empty workflow page', async () => {
+		await expect(search!.call(loader(vi.fn().mockResolvedValue(list([]))))).resolves.toEqual({
+			results: [],
 		});
 	});
 
