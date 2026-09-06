@@ -50,6 +50,11 @@ for (const path of [
 	'.github/workflows/ci.yml',
 	'.blackswamp/template.json',
 	'docs/branding.md',
+	'docs/api-matrix.md',
+	'docs/testing.md',
+	'docs/BATCH_HANDOFF_TEMPLATE.md',
+	'docs/TEMPLATE_MIGRATIONS.md',
+	'.github/pull_request_template.md',
 ]) {
 	if (!existsSync(resolve(root, path))) fail(`${path} is required`);
 }
@@ -79,6 +84,7 @@ if (packageJson.devDependencies?.vitest !== '4.1.11') fail('Vitest must be pinne
 if (packageJson.packageManager !== 'npm@11.19.0') fail('packageManager must pin npm@11.19.0');
 for (const [dependency, version] of [
 	['@n8n/node-cli', '0.46.4'],
+	['@n8n/scan-community-package', '0.34.0'],
 	['eslint', '9.39.4'],
 	['prettier', '3.8.3'],
 	['release-it', '20.2.0'],
@@ -130,10 +136,10 @@ if (packageJson.n8n?.nodes?.length !== 1 || packageJson.n8n?.credentials?.length
 const marker = JSON.parse(read('.blackswamp/template.json'));
 if (
 	marker.schemaVersion !== 1 ||
-	marker.templateVersion !== '2.0.0' ||
+	marker.templateVersion !== '2.0.1' ||
 	marker.sourceRepository !== TEMPLATE_ORIGIN
 )
-	fail('Template v2 provenance marker is invalid');
+	fail('Template v2.0.1 provenance marker is invalid');
 const expectedIconHash = '20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8';
 const { createHash } = await import('node:crypto');
 for (const icon of ['nodes/Novu/novu.svg', 'nodes/Novu/novu.dark.svg'])
@@ -179,7 +185,8 @@ if (isTemplateMode) {
 		if (!value || hasPlaceholder(value)) fail(`package.json ${label} is missing or a placeholder`);
 	}
 	if (isPrivateInitialization && !readme.includes('private scaffold'))
-		fail('private initialization README must identify the package as a private scaffold');
+		if (!readme.includes('private prerelease'))
+			fail('private initialization README must identify the package as a private prerelease');
 	if (packageJson.license !== 'MIT' || packageJson.publishConfig?.access !== 'public')
 		fail('normal mode requires MIT and public publish config');
 	if (!packageJson.keywords?.includes('n8n-community-node-package'))
@@ -200,6 +207,44 @@ if (isTemplateMode) {
 	if (hasPlaceholder(readme)) fail('README still contains template placeholders');
 	if (/nodes\/Example|nodes\/GithubIssues|GithubIssuesApi/.test(JSON.stringify(packageJson.n8n)))
 		fail('remove or replace template example registrations');
+	const nodeSource = read('nodes/Novu/Novu.node.ts');
+	const resourceOptions = nodeSource.match(
+		/displayName: 'Resource'[\s\S]*?options:\s*\[([\s\S]*?)\],\s*default:/,
+	)?.[1];
+	const resources = [...(resourceOptions ?? '').matchAll(/value: '([^']+)'/g)]
+		.map((match) => match[1])
+		.sort();
+	const expectedResources = [
+		'notification',
+		'subscriber',
+		'subscriberPreference',
+		'topic',
+		'topicSubscription',
+	].sort();
+	if (JSON.stringify(resources) !== JSON.stringify(expectedResources))
+		fail(`Novu resources must be exactly ${expectedResources.join(', ')}`);
+	for (const document of ['docs/api-matrix.md', 'docs/testing.md', 'docs/branding.md']) {
+		const content = read(document);
+		if (content.length < 500 || /\b(?:TODO|CHANGEME)\b/i.test(content))
+			fail(`${document} must be completed rather than a placeholder`);
+	}
+	for (const safeguard of [
+		'optional package root',
+		'createRequire',
+		'referencedCredentials',
+		'viewBox',
+	]) {
+		const smoke = read('scripts/node-load-smoke.mjs');
+		if (safeguard === 'optional package root') {
+			if (!smoke.includes('process.argv[2]'))
+				fail('load smoke must accept an optional package root');
+		} else if (!smoke.includes(safeguard)) fail(`load smoke is missing ${safeguard} safeguard`);
+	}
+	const installSmoke = read('scripts/package-install-smoke.mjs');
+	for (const flag of ['--ignore-scripts', '--no-package-lock', '--omit=peer'])
+		if (!installSmoke.includes(flag)) fail(`install smoke must use ${flag}`);
+	if (!installSmoke.includes('NODE_PATH'))
+		fail('install smoke must resolve host-provided peers through development NODE_PATH');
 }
 
 if (failures.length) {

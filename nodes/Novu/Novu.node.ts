@@ -14,6 +14,8 @@ import { subscriberPreferenceProperties } from './resources/subscriberPreference
 import { executeSubscriberPreferenceOperation } from './resources/subscriberPreference';
 import { topicProperties } from './resources/topic.description';
 import { executeTopicOperation } from './resources/topic';
+import { topicSubscriptionProperties } from './resources/topicSubscription.description';
+import { executeTopicSubscriptionOperation } from './resources/topicSubscription';
 
 export class Novu implements INodeType {
 	description: INodeTypeDescription = {
@@ -40,6 +42,7 @@ export class Novu implements INodeType {
 					{ name: 'Subscriber', value: 'subscriber' },
 					{ name: 'Subscriber Preference', value: 'subscriberPreference' },
 					{ name: 'Topic', value: 'topic' },
+					{ name: 'Topic Subscription', value: 'topicSubscription' },
 				],
 				default: 'subscriber',
 			},
@@ -47,6 +50,7 @@ export class Novu implements INodeType {
 			...notificationProperties,
 			...subscriberPreferenceProperties,
 			...topicProperties,
+			...topicSubscriptionProperties,
 		],
 	};
 
@@ -65,6 +69,8 @@ export class Novu implements INodeType {
 					output.push(...(await executeSubscriberPreferenceOperation(this, operation, itemIndex)));
 				} else if (resource === 'topic') {
 					output.push(...(await executeTopicOperation(this, operation, itemIndex)));
+				} else if (resource === 'topicSubscription') {
+					output.push(...(await executeTopicSubscriptionOperation(this, operation, itemIndex)));
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`, {
 						itemIndex,

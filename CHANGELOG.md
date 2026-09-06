@@ -8,3 +8,4 @@
 - Add the Batch 4 Trigger Workflow notification action and opt-in idempotency-protected retries.
 - Add Batch 5 global and workflow-specific Subscriber Preference Get and Update operations.
 - Add Batch 6 Topic lifecycle operations with flat custom data and forward cursor pagination.
+- Add Batch 7 Topic Subscription lifecycle operations and Topic workflow recipients.

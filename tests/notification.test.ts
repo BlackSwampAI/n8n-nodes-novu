@@ -45,6 +45,68 @@ const acknowledgment = (status = 'processed') => ({
 });
 
 describe('Notification Trigger Workflow', () => {
+	it('keeps saved workflows on subscriber recipients and supports an exact topic recipient', async () => {
+		const request = vi.fn().mockResolvedValue(acknowledgment());
+		await run(
+			makeContext(
+				[
+					trigger(),
+					trigger({ recipientType: 'subscriber', subscriberId: 'explicit' }),
+					trigger({ recipientType: 'topic', subscriberId: '', recipientTopicKey: 'orders/a' }),
+				],
+				request,
+			),
+		);
+		expect(request.mock.calls.map((call) => (call[1].body as Record<string, unknown>).to)).toEqual([
+			'customer-1',
+			'explicit',
+			{ type: 'Topic', topicKey: 'orders/a' },
+		]);
+	});
+
+	it.each([
+		[{ recipientType: 'topic', recipientTopicKey: '' }, 'Topic Key'],
+		[{ recipientType: 'broadcast' }, 'Recipient Type'],
+	])('rejects invalid topic recipient input', async (override, message) => {
+		const request = vi.fn();
+		await expect(run(makeContext([trigger(override)], request))).rejects.toThrow(message);
+		expect(request).not.toHaveBeenCalled();
+	});
+
+	it('retries an identical topic body with the identical idempotency key', async () => {
+		vi.useFakeTimers();
+		try {
+			const request = vi
+				.fn()
+				.mockRejectedValueOnce({ statusCode: 408 })
+				.mockResolvedValue(acknowledgment());
+			const promise = run(
+				makeContext(
+					[
+						trigger({
+							recipientType: 'topic',
+							recipientTopicKey: 'orders',
+							triggerOptions: { idempotencyKey: 'stable', retryWithIdempotencyKey: true },
+						}),
+					],
+					request,
+				),
+			);
+			await vi.runAllTimersAsync();
+			await expect(promise).resolves.toHaveLength(1);
+			expect(request).toHaveBeenCalledTimes(2);
+			expect(request.mock.calls[1][1]).toEqual(request.mock.calls[0][1]);
+			expect(request.mock.calls[0][1]).toEqual(
+				expect.objectContaining({
+					headers: { 'Idempotency-Key': 'stable' },
+					body: expect.objectContaining({ to: { type: 'Topic', topicKey: 'orders' } }),
+				}),
+			);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('sends exact v1 REST fields, omits optional values, and preserves the acknowledgment', async () => {
 		const response = acknowledgment();
 		const request = vi.fn().mockResolvedValue(response);

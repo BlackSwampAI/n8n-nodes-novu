@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-describe('private Novu Batch 1 scaffold', () => {
+describe('private Novu Batch 7 package safeguards', () => {
 	it('has final working identity while publication stays blocked', async () => {
 		const packageJson = JSON.parse(await read('package.json')) as {
 			name: string;
@@ -14,6 +14,7 @@ describe('private Novu Batch 1 scaffold', () => {
 			repository: { url: string };
 			dependencies?: Record<string, string>;
 			peerDependencies: Record<string, string>;
+			devDependencies: Record<string, string>;
 			n8n: { nodes: string[]; credentials: string[]; strict: boolean };
 		};
 
@@ -22,6 +23,7 @@ describe('private Novu Batch 1 scaffold', () => {
 		expect(packageJson.repository.url).toBe('https://github.com/BlackSwampAI/n8n-nodes-novu.git');
 		expect(packageJson.dependencies ?? {}).toEqual({});
 		expect(packageJson.peerDependencies).toEqual({ 'n8n-workflow': '*' });
+		expect(packageJson.devDependencies['@n8n/scan-community-package']).toBe('0.34.0');
 		expect(packageJson.n8n).toMatchObject({
 			strict: true,
 			nodes: ['dist/nodes/Novu/Novu.node.js'],
@@ -29,28 +31,37 @@ describe('private Novu Batch 1 scaffold', () => {
 		});
 	});
 
-	it('advertises only the implemented Subscriber and Notification resources', async () => {
+	it('advertises exactly the implemented Batch 7 resources', async () => {
 		const [node, readme, status] = await Promise.all([
 			read('nodes/Novu/Novu.node.ts'),
 			read('README.md'),
 			read('docs/STATUS.md'),
 		]);
 
-		expect(node).toContain("value: 'subscriber'");
-		expect(node).toContain("value: 'notification'");
+		const resourceOptions = node.match(
+			/displayName: 'Resource'[\s\S]*?options:\s*\[([\s\S]*?)\],\s*default:/,
+		)?.[1];
+		expect(
+			[...(resourceOptions ?? '').matchAll(/value: '([^']+)'/g)].map((match) => match[1]),
+		).toEqual(['notification', 'subscriber', 'subscriberPreference', 'topic', 'topicSubscription']);
 		expect(readme).toContain('Create or Update');
+		expect(readme).toContain('Topic Subscription');
 		expect(status).toContain('Live Novu requests: none');
 	});
 
 	it('records required contract decisions and release controls', async () => {
-		const [coverage, adr, releaseCheck, packageCheck, ci, branding] = await Promise.all([
-			read('docs/API_COVERAGE.md'),
-			read('docs/decisions/0001-node-architecture.md'),
-			read('scripts/release-check.mjs'),
-			read('scripts/validate-pack.mjs'),
-			read('.github/workflows/ci.yml'),
-			read('docs/branding.md'),
-		]);
+		const [coverage, adr, releaseCheck, packageCheck, ci, branding, matrix, testing, migration] =
+			await Promise.all([
+				read('docs/API_COVERAGE.md'),
+				read('docs/decisions/0001-node-architecture.md'),
+				read('scripts/release-check.mjs'),
+				read('scripts/validate-pack.mjs'),
+				read('.github/workflows/ci.yml'),
+				read('docs/branding.md'),
+				read('docs/api-matrix.md'),
+				read('docs/testing.md'),
+				read('docs/TEMPLATE_MIGRATIONS.md'),
+			]);
 
 		for (const contract of [
 			'DELETE /v2/topics/{topicKey}/subscriptions',
@@ -68,6 +79,12 @@ describe('private Novu Batch 1 scaffold', () => {
 		expect(releaseCheck).toContain('CI must run build before');
 		expect(releaseCheck).toContain('publish workflow must remain absent');
 		expect(branding).toContain('dc9caee828136e25db2400433e2f67e2193f964c');
+		expect(matrix).toContain('Topic Subscription / Delete');
+		expect(testing).toContain('npm run smoke:install');
+		expect(migration).toContain('Template 2.0.1');
+		expect(releaseCheck).toContain("marker.templateVersion !== '2.0.1'");
+		expect(releaseCheck).toContain("'--omit=peer'");
+		expect(releaseCheck).toContain("['@n8n/scan-community-package', '0.34.0']");
 	});
 
 	it('packages the immutable official Novu adaptive icon for both themes', async () => {

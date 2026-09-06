@@ -7,7 +7,7 @@
 - Pull request: [#1](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/1)
 - Merge commit: `52a3992`
 - Post-merge main CI: successful
-- Package: `n8n-nodes-novu@0.1.0`, deliberately `private: true`
+- Package at the time: `n8n-nodes-novu@0.1.0`, deliberately `private: true`
 
 ### Completed
 
@@ -162,9 +162,11 @@ Batch 6: Topic lifecycle—Create or Update, Get, Get Many, Update, and Delete.
 
 ## Batch 6: topic lifecycle
 
-- Status: implemented locally; awaiting orchestrator review
-- Branch: `batch-6-topic-lifecycle`
-- Pull request: none
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: [#6](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/6)
+- Merge commit: `00de64b`
+- Post-merge main CI: successful ([run 34014365414](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34014365414))
 - Package: remains private `n8n-nodes-novu@0.1.0`
 
 ### Delivered
@@ -186,3 +188,33 @@ Batch 6: Topic lifecycle—Create or Update, Get, Get Many, Update, and Delete.
 ## Next batch
 
 Batch 7: Topic subscriptions and topic notification delivery.
+
+## Batch 7: topic subscriptions and topic delivery
+
+- Status: implemented locally after PR #7 private hardening; draft PR awaiting human review
+- Branch: `batch-7-topic-subscriptions`
+- Baseline hardening: [PR #7](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/7), commit `510ec29`, merged to `main`; post-merge CI [run 34025348837](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34025348837) successful
+- Batch 7 pull request: draft [#8](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/8), awaiting human review
+- Package: private `@blackswampai/n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Topic Subscription exposes only Create, Get Many, and Delete using the modern `subscriptions` request field, never deprecated `subscriberIds`.
+- Create/Delete accept 1–100 relationship entries and preserve full mutation envelopes, including partial failures. Novu may auto-create a missing topic during Create.
+- Subscriber-only Delete is explicitly labeled as removing all of that subscriber's relationships in the topic; identifier-only and combined selectors are supported.
+- Get Many supports subscriber/context filters, ordering, exact limits, forward pagination, envelope/repeated-cursor validation, empty output, and input pairing without assuming subscriber/topic uniqueness.
+- Trigger Workflow adds backward-compatible Subscriber/Topic recipient selection. Topic mode sends the exact Topic recipient object and relies on Novu fan-out; it is neither a client member loop nor broadcast-to-all.
+
+### Evidence and limitations
+
+- Contract evidence: official Novu Topic Subscription and event trigger documentation reviewed September 6, 2026.
+- Deterministic mocks cover metadata, modern request shapes, encoded keys, 1/100 bounds, relationship selectors, partial results, query allowlists, multi-page limits, malformed/repeated cursors, pairing/continuation, backward-compatible subscriber recipients, exact Topic recipients, and identical idempotent retry requests.
+- Local validation on Node 24.18.0: frozen install, formatting and format check, official n8n lint, strict typecheck, 140 Vitest tests, build, official source/built scan, private release audit, 51-file dry-run package boundary, workspace constructor/icon load, isolated packed install/load, and `git diff --check` passed. Known non-failing upstream `n8n-workflow` missing-sourcemap warnings and npm dependency deprecation/update notices remain development advisories; `NO_COLOR` was unset for CLI lint.
+- No credentials, live API request, n8n editor execution, Cloud environment, provider delivery observation, or pinned self-hosted environment was used. Auto-create, relationship deletion effects, partial failures, topic fan-out, provider usage/billing, and actual delivery remain live-unverified.
+- The scoped npm name returned `E404` on September 6, 2026; this is availability evidence, not a reservation, and must be rechecked before publication. The canonical homepage `https://blackswampai.com/n8n-nodes/novu/` currently returns HTTP 404 and is an external release blocker.
+- Workspace constructor/icon loading and isolated packed install/load are local package checks, not actual n8n editor or Creator Portal visual evidence. Those visual gates remain pending.
+- Context-scoped subscriptions, conditional/group preferences, bulk/broadcast, and later workflow discovery/cancellation remain deferred.
+
+## Next batch
+
+Batch 8: Workflow discovery and pending execution cancellation.

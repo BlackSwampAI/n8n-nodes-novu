@@ -94,7 +94,16 @@ export const executeNotificationOperation = async (
 		'Workflow Identifier',
 		itemIndex,
 	);
-	const subscriberId = requiredString(context, 'subscriberId', 'External Subscriber ID', itemIndex);
+	const recipientType = context.getNodeParameter('recipientType', itemIndex, 'subscriber');
+	if (recipientType !== 'subscriber' && recipientType !== 'topic')
+		throw localError(context, 'Recipient Type must be Subscriber or Topic', itemIndex);
+	const to: string | IDataObject =
+		recipientType === 'topic'
+			? {
+					type: 'Topic',
+					topicKey: requiredString(context, 'recipientTopicKey', 'Topic Key', itemIndex),
+				}
+			: requiredString(context, 'subscriberId', 'External Subscriber ID', itemIndex);
 	const payload = parsePayload(context, context.getNodeParameter('payload', itemIndex), itemIndex);
 	const rawOptions = context.getNodeParameter('triggerOptions', itemIndex, {});
 	if (!isObject(rawOptions)) throw localError(context, 'Options must be an object', itemIndex);
@@ -125,7 +134,7 @@ export const executeNotificationOperation = async (
 		);
 	}
 
-	const body: IDataObject = { name: workflowIdentifier, to: subscriberId, payload };
+	const body: IDataObject = { name: workflowIdentifier, to, payload };
 	if (transactionId) body.transactionId = transactionId;
 	const response = await novuApiRequest<unknown>(context, {
 		method: 'POST',
