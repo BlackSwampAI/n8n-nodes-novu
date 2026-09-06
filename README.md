@@ -33,7 +33,7 @@ The Subscriber resource implements:
 - Update selected fields or explicitly clear them to null
 - Delete
 
-Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Workflow discovery and cancellation remain unavailable until their planned batch.
+Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item.
 
 The Subscriber Preference resource gets the full global/workflow preference envelope and updates global or workflow-specific channel settings. Email, SMS, in-app, push, chat, and tool each use Unchanged/Enabled/Disabled controls, so PATCH requests omit unrelated settings and preserve `false`. Workflow references may be a Novu internal `_id`, identifier, or slug. Get supports documented criticality and context-key filters. Schedule and context mutation remain deferred, and changing a preference is not claimed to cancel already queued work.
 
@@ -44,6 +44,10 @@ Topic Subscription implements Create, Get Many, and Delete using Novu's current 
 Trigger Workflow supports either one subscriber or one Topic recipient. Topic mode sends `{ "type": "Topic", "topicKey": "..." }` and lets Novu perform fan-out; it does not loop through members or broadcast globally. Fan-out may affect provider usage and billing. The response remains acceptance/processing evidence, not delivery proof.
 
 The Notification resource implements **Trigger Workflow** for one subscriber or one Topic per input item. It sends the workflow identifier as REST field `name`, the selected recipient as `to`, and an object payload. The full Novu acknowledgment is preserved, including its transaction ID when returned. An acknowledgment means Novu accepted or reported processing of the request; it does not prove email, SMS, push, or in-app delivery.
+
+Workflow identifiers can be searched and paginated From List or entered manually By ID; list permissions never make manual entry a prerequisite. The Workflow resource implements Get and Get Many, returns full workflow objects, and keeps public `workflowId` distinct from internal `_id`. Workflow lists use their endpoint-specific offset/limit pagination.
+
+Notification also implements **Cancel Execution** by transaction ID. It reports Novu's actual boolean result and can cancel only eligible active or pending work such as delays or digests. It cannot recall messages already delivered.
 
 Transaction ID and Idempotency Key are separate optional inputs. Transaction ID supports tracing and later cancellation but is not API-boundary deduplication. When enabled for the Novu organization, Idempotency Key caches a request result for a finite 24-hour window. The opt-in retry control requires that key and makes no more than three total attempts for HTTP 408, 409 in-progress, 429, 500/502/503/504, or status-free network/timeout failures. Numeric `Retry-After` values are respected up to 30 seconds; longer values surface an error rather than waiting less than Novu requested. Without `Retry-After`, delays are one then two seconds. Do not combine this policy with n8n node-level retries.
 

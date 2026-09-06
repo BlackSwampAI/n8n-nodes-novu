@@ -38,7 +38,7 @@ Before any tag, a dedicated release-preparation change must:
 6. keep irreversible publication in a publish job and fresh read-only registry/provenance/package scanning in a dependent verify-published job; and
 7. pass the full release audit on the exact reviewed commit before creating a tag.
 
-None of those release-only components belong in the private Batch 7 package.
+None of those release-only components belong in the private prerelease package.
 
 ## Future first publication only
 

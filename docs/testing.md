@@ -38,4 +38,4 @@ git diff --check
 - Delivery: inspect Novu activity/inbox or an owner-controlled test inbox. Trigger acknowledgments prove acceptance/processing only.
 - Creator Portal: applies only after authorized npm publication/submission; visually verify the exact submitted version and logo independently of npm/editor state.
 
-No credentials, live API calls, provider delivery, editor session, self-hosted instance, or Portal submission have been used through Batch 7. See [project status](STATUS.md) for batch-specific evidence.
+No credentials, live API calls, provider delivery, editor session, self-hosted instance, or Portal submission have been used through Batch 8. See [project status](STATUS.md) for batch-specific evidence.

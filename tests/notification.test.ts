@@ -2,6 +2,7 @@ import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 
 import { describe, expect, it, vi } from 'vitest';
 
 import { Novu } from '../nodes/Novu/Novu.node';
+import { notificationProperties } from '../nodes/Novu/resources/notification.description';
 
 type Parameters = Record<string, unknown>;
 
@@ -45,6 +46,31 @@ const acknowledgment = (status = 'processed') => ({
 });
 
 describe('Notification Trigger Workflow', () => {
+	it('advertises trigger and cancellation with required conditional controls', () => {
+		const operation = notificationProperties.find(({ name }) => name === 'operation');
+		expect(
+			operation?.options?.map((option) => ('value' in option ? option.value : undefined)),
+		).toEqual(['cancelExecution', 'triggerWorkflow']);
+		expect(notificationProperties.find(({ name }) => name === 'workflowIdentifier')).toMatchObject({
+			type: 'resourceLocator',
+			required: true,
+		});
+		expect(notificationProperties.find(({ name }) => name === 'cancelTransactionId')).toMatchObject(
+			{
+				type: 'string',
+				required: true,
+				displayOptions: { show: { operation: ['cancelExecution'] } },
+			},
+		);
+	});
+	it.each([
+		[{ mode: 'list', value: 'chosen-workflow' }, 'chosen-workflow'],
+		[{ mode: 'id', value: 'manual-workflow' }, 'manual-workflow'],
+	])('normalizes workflow locator %# into the REST name', async (workflowIdentifier, name) => {
+		const request = vi.fn().mockResolvedValue(acknowledgment());
+		await run(makeContext([trigger({ workflowIdentifier })], request));
+		expect(request.mock.calls[0][1].body).toEqual(expect.objectContaining({ name }));
+	});
 	it('keeps saved workflows on subscriber recipients and supports an exact topic recipient', async () => {
 		const request = vi.fn().mockResolvedValue(acknowledgment());
 		await run(
@@ -196,6 +222,14 @@ describe('Notification Trigger Workflow', () => {
 		expect(request).not.toHaveBeenCalled();
 	});
 
+	it('rejects the resource locator default blank object before transport', async () => {
+		const request = vi.fn();
+		await expect(
+			run(makeContext([trigger({ workflowIdentifier: { mode: 'list', value: '' } })], request)),
+		).rejects.toThrow('Workflow Identifier');
+		expect(request).not.toHaveBeenCalled();
+	});
+
 	it('rejects oversized keys and retry without a key locally', async () => {
 		const request = vi.fn();
 		await expect(
@@ -292,5 +326,44 @@ describe('Notification Trigger Workflow', () => {
 			),
 		).rejects.toThrow('HTTP status 422');
 		expect(request).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('Notification Cancel Execution', () => {
+	const cancel = (transactionId: unknown) => ({
+		resource: 'notification',
+		operation: 'cancelExecution',
+		cancelTransactionId: transactionId,
+	});
+
+	it.each([true, false])('maps actual cancellation response %s', async (cancelled) => {
+		const request = vi.fn().mockResolvedValue(cancelled);
+		await expect(run(makeContext([cancel('tx/a')], request))).resolves.toEqual([
+			{ json: { transactionId: 'tx/a', cancelled }, pairedItem: 0 },
+		]);
+		expect(request).toHaveBeenCalledWith('novuApi', {
+			method: 'DELETE',
+			url: 'https://api.novu.co/v1/events/trigger/tx%2Fa',
+			json: true,
+		});
+	});
+
+	it('validates blank and malformed responses', async () => {
+		const request = vi.fn();
+		await expect(run(makeContext([cancel('')], request))).rejects.toThrow('Transaction ID');
+		expect(request).not.toHaveBeenCalled();
+		await expect(
+			run(makeContext([cancel('tx')], vi.fn().mockResolvedValue({ cancelled: true }))),
+		).rejects.toThrow('malformed cancellation');
+	});
+
+	it('resolves distinct items and supports continuation', async () => {
+		const request = vi.fn().mockRejectedValueOnce({ statusCode: 404 }).mockResolvedValueOnce(true);
+		await expect(
+			run(makeContext([cancel('missing'), cancel('pending')], request, true)),
+		).resolves.toEqual([
+			{ json: { error: expect.stringContaining('resource or route') }, pairedItem: 0 },
+			{ json: { transactionId: 'pending', cancelled: true }, pairedItem: 1 },
+		]);
 	});
 });

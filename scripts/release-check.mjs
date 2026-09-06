@@ -220,6 +220,7 @@ if (isTemplateMode) {
 		'subscriberPreference',
 		'topic',
 		'topicSubscription',
+		'workflow',
 	].sort();
 	if (JSON.stringify(resources) !== JSON.stringify(expectedResources))
 		fail(`Novu resources must be exactly ${expectedResources.join(', ')}`);

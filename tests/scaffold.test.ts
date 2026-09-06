@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-describe('private Novu Batch 7 package safeguards', () => {
+describe('private Novu Batch 8 package safeguards', () => {
 	it('has final working identity while publication stays blocked', async () => {
 		const packageJson = JSON.parse(await read('package.json')) as {
 			name: string;
@@ -31,7 +31,7 @@ describe('private Novu Batch 7 package safeguards', () => {
 		});
 	});
 
-	it('advertises exactly the implemented Batch 7 resources', async () => {
+	it('advertises exactly the implemented Batch 8 resources', async () => {
 		const [node, readme, status] = await Promise.all([
 			read('nodes/Novu/Novu.node.ts'),
 			read('README.md'),
@@ -43,7 +43,14 @@ describe('private Novu Batch 7 package safeguards', () => {
 		)?.[1];
 		expect(
 			[...(resourceOptions ?? '').matchAll(/value: '([^']+)'/g)].map((match) => match[1]),
-		).toEqual(['notification', 'subscriber', 'subscriberPreference', 'topic', 'topicSubscription']);
+		).toEqual([
+			'notification',
+			'subscriber',
+			'subscriberPreference',
+			'topic',
+			'topicSubscription',
+			'workflow',
+		]);
 		expect(readme).toContain('Create or Update');
 		expect(readme).toContain('Topic Subscription');
 		expect(status).toContain('Live Novu requests: none');
