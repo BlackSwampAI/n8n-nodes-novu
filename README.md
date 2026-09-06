@@ -33,9 +33,11 @@ The Subscriber resource implements:
 - Update selected fields or explicitly clear them to null
 - Delete
 
-Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Topic, subscription, workflow discovery, and cancellation operations remain unavailable until their planned batches.
+Common profile fields are typed inputs; Custom Data accepts an expression-capable JSON object or null. Update sends selected fields only. List results retain input-item linkage and empty lists emit no fabricated item. Topic subscriptions, topic notification recipients, workflow discovery, and cancellation remain unavailable until their planned batches.
 
 The Subscriber Preference resource gets the full global/workflow preference envelope and updates global or workflow-specific channel settings. Email, SMS, in-app, push, chat, and tool each use Unchanged/Enabled/Disabled controls, so PATCH requests omit unrelated settings and preserve `false`. Workflow references may be a Novu internal `_id`, identifier, or slug. Get supports documented criticality and context-key filters. Schedule and context mutation remain deferred, and changing a preference is not claimed to cancel already queued work.
+
+The Topic resource implements Create or Update, Get, Get Many, Update, and Delete. Topic keys remain distinct from internal IDs and are encoded in paths. Create accepts an optional display name and flat custom-data object or null; strict creation is optional. Get Many uses forward `after` pagination with Novu's documented maximum of 100 per request, without exposing raw cursors or `includeCursor`. Delete returns only the targeted key and Novu's actual acknowledgment; deleting a topic irreversibly removes its subscriptions.
 
 The Notification resource implements **Trigger Workflow** for one external subscriber per input item. It sends the workflow identifier as REST field `name`, the subscriber ID as `to`, and an object payload. The full Novu acknowledgment is preserved, including its transaction ID when returned. An acknowledgment means Novu accepted or reported processing of the request; it does not prove email, SMS, push, or in-app delivery.
 

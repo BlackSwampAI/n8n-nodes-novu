@@ -133,9 +133,11 @@ Batch 5: Subscriber Preferences, preserving unchanged/enabled/disabled distincti
 
 ## Batch 5: subscriber preferences
 
-- Status: implemented locally; awaiting orchestrator review
-- Branch: `batch-5-subscriber-preferences`
-- Pull request: none
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: [#5](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/5)
+- Merge commit: `99004ae`
+- Post-merge main CI: successful ([run 34011885668](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34011885668))
 - Package: remains private `n8n-nodes-novu@0.1.0`
 
 ### Delivered
@@ -157,3 +159,30 @@ Batch 5: Subscriber Preferences, preserving unchanged/enabled/disabled distincti
 ## Next batch
 
 Batch 6: Topic lifecycle—Create or Update, Get, Get Many, Update, and Delete.
+
+## Batch 6: topic lifecycle
+
+- Status: implemented locally; awaiting orchestrator review
+- Branch: `batch-6-topic-lifecycle`
+- Pull request: none
+- Package: remains private `n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Topic exposes only Create or Update, Get, Get Many, Update, and Delete. Public topic keys stay distinct from internal `_id` values and are encoded in path segments.
+- Create preserves omission versus empty display name or null custom data, validates flat scalar/string-array data and the 64 KB bound, and optionally requests strict creation.
+- Update sends the required display name only; data is not added to the current PATCH schema.
+- Get Many implements key/name filters, ordering, exact Limit/Return All, forward `after` pagination at the documented 100-record maximum, envelope validation, repeated cursor detection, empty output, and pairing. Raw cursors and `includeCursor` are deliberately not exposed.
+- Delete emits only the targeted topic key and Novu's actual boolean acknowledgment. No success is inferred from malformed responses; topic deletion's irreversible subscription removal is documented.
+
+### Evidence and limitations
+
+- Contract evidence: current official Novu Topic documentation reviewed September 6, 2026.
+- Deterministic mocks cover metadata, all methods/routes, encoded keys, per-item values, omission/empty/null/flat data, false/zero/string arrays, invalid/nested/oversize data, strict create, name-only update, full responses, multi-page/limited/empty lists, filters/order, malformed/repeated cursors, delete booleans, missing topics, continuation, and pairing.
+- Local validation on Node 24.18.0: format check, official n8n lint, strict typecheck, 123 Vitest tests, build, private package audit/dry-run boundary, and `git diff --check` passed. Known non-failing upstream `n8n-workflow` missing-sourcemap warnings remain; `NO_COLOR` was unset for CLI lint.
+- No credentials, live API request, n8n editor execution, Cloud environment, or pinned self-hosted environment was used. Actual upsert/strict duplicate behavior, data persistence, deletion effects, and response shapes remain live-unverified.
+- No Topic Subscription operation or Topic notification recipient mode was added. Topic operations use no automatic retries or Idempotency-Key header.
+
+## Next batch
+
+Batch 7: Topic subscriptions and topic notification delivery.
