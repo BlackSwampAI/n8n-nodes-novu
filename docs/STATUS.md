@@ -104,9 +104,11 @@ Batch 4: Trigger Workflow for one subscriber per input item, building on the pro
 
 ## Batch 4: trigger a workflow for a subscriber
 
-- Status: implemented locally; awaiting orchestrator review
-- Branch: `batch-4-trigger-workflow`
-- Pull request: none
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: [#4](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/4)
+- Merge commit: `d89d031`
+- Post-merge main CI: successful ([run 34010280849](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34010280849))
 - Package: remains private `n8n-nodes-novu@0.1.0`
 
 ### Delivered
@@ -128,3 +130,30 @@ Batch 4: Trigger Workflow for one subscriber per input item, building on the pro
 ## Next batch
 
 Batch 5: Subscriber Preferences, preserving unchanged/enabled/disabled distinctions and unrelated settings.
+
+## Batch 5: subscriber preferences
+
+- Status: implemented locally; awaiting orchestrator review
+- Branch: `batch-5-subscriber-preferences`
+- Pull request: none
+- Package: remains private `n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Subscriber Preference exposes only Get and Update through the encoded external subscriber ID preference route.
+- Get supports optional criticality and context-key filters and preserves the full global/workflow envelope.
+- Update selects Global or Workflow scope. Workflow scope requires an exact non-empty reference accepting the documented internal `_id`, identifier, or slug forms.
+- All six currently documented channels—email, sms, in_app, push, chat, and tool—use Unchanged/Enabled/Disabled controls. Only changed booleans are sent, preserving unrelated settings and false values; all-unchanged updates fail locally.
+- Schedule and context mutation remain deferred. No claim is made that preference changes cancel already queued work.
+
+### Evidence and limitations
+
+- Contract evidence: official Novu subscriber preference documentation reviewed September 6, 2026. The current six-channel schema adds `tool` relative to the five-channel project handoff and is recorded as documentation drift.
+- Deterministic mocks cover metadata/display conditions, encoded GET/PATCH routes, optional query omission/inclusion, string-array context keys, full-envelope preservation, global/workflow bodies, all six tri-states, no-op and malformed inputs/responses, two input items, pairing, and continuation.
+- Local validation on Node 24.18.0: format check, official n8n lint, strict typecheck, 110 Vitest tests, build, private package audit/dry-run boundary, and `git diff --check` passed. Known non-failing upstream `n8n-workflow` missing-sourcemap warnings remain; `NO_COLOR` was unset for CLI lint.
+- No credentials, live Novu API request, n8n editor execution, Cloud environment, or pinned self-hosted environment was used. Upstream preference mutation/read-back behavior and its practical notification effect remain live-unverified.
+- No retry or Idempotency-Key header is used for preference operations.
+
+## Next batch
+
+Batch 6: Topic lifecycle—Create or Update, Get, Get Many, Update, and Delete.
