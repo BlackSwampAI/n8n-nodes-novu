@@ -22,7 +22,6 @@ const hasPlaceholder = (value) =>
 
 const packageJson = JSON.parse(read('package.json'));
 const readme = read('README.md');
-const publishWorkflow = read('.github/workflows/publish.yml');
 const ciWorkflow = read('.github/workflows/ci.yml');
 let origin = '';
 try {
@@ -49,7 +48,8 @@ for (const path of [
 	'vitest.config.mts',
 	'tsconfig.test.json',
 	'.github/workflows/ci.yml',
-	'.github/workflows/publish.yml',
+	'.blackswamp/template.json',
+	'docs/branding.md',
 ]) {
 	if (!existsSync(resolve(root, path))) fail(`${path} is required`);
 }
@@ -99,19 +99,50 @@ if (packageJson.peerDependencies?.['n8n-workflow'] !== '*')
 if (packageJson.n8n?.strict !== true) fail('n8n.strict must be true');
 if (packageJson.files?.length !== 1 || packageJson.files[0] !== 'dist')
 	fail('package files must expose only dist');
-if (!publishWorkflow.includes("- 'v*.*.*'")) fail('publish must be tag-only');
-if (!/id-token:\s*write/.test(publishWorkflow) || !/contents:\s*read/.test(publishWorkflow))
-	fail('publish permissions are incomplete');
-if (!publishWorkflow.includes('secrets.NPM_TOKEN'))
-	fail('publish must retain bootstrap token support');
-for (const [label, workflow] of [
-	['CI', ciWorkflow],
-	['publish', publishWorkflow],
-]) {
+if (existsSync(resolve(root, '.github/workflows/publish.yml')))
+	fail('publish workflow must remain absent while package.json is private');
+for (const [label, workflow] of [['CI', ciWorkflow]]) {
 	if (!workflow.includes('npm install --global npm@11.19.0')) {
 		fail(`${label} workflow must install npm 11.19.0 before npm ci`);
 	}
 }
+if (!/timeout-minutes:\s*20/.test(ciWorkflow)) fail('CI must have a 20-minute timeout');
+for (const gate of ['scan:source', 'package:check', 'smoke:load', 'smoke:install'])
+	if (!ciWorkflow.includes(`npm run ${gate}`)) fail(`CI must run npm run ${gate}`);
+const ciCommands = [...ciWorkflow.matchAll(/^\s*- run:\s*(.+)$/gm)].map((match) => match[1].trim());
+const buildIndex = ciCommands.indexOf('npm run build');
+for (const command of [
+	'npm run scan:source',
+	'npm run package:check',
+	'npm run smoke:load',
+	'npm run smoke:install',
+]) {
+	if (buildIndex < 0 || ciCommands.indexOf(command) <= buildIndex)
+		fail(`CI must run build before ${command}`);
+}
+if (packageJson.name !== '@blackswampai/n8n-nodes-novu')
+	fail('scoped package identity is required');
+if (packageJson.homepage !== 'https://blackswampai.com/n8n-nodes/novu/')
+	fail('canonical homepage is required');
+if (packageJson.private !== true) fail('private publication guard must remain enabled');
+if (packageJson.n8n?.nodes?.length !== 1 || packageJson.n8n?.credentials?.length !== 1)
+	fail('compiled node and credential registrations are required');
+const marker = JSON.parse(read('.blackswamp/template.json'));
+if (
+	marker.schemaVersion !== 1 ||
+	marker.templateVersion !== '2.0.0' ||
+	marker.sourceRepository !== TEMPLATE_ORIGIN
+)
+	fail('Template v2 provenance marker is invalid');
+const expectedIconHash = '20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8';
+const { createHash } = await import('node:crypto');
+for (const icon of ['nodes/Novu/novu.svg', 'nodes/Novu/novu.dark.svg'])
+	if (
+		createHash('sha256')
+			.update(readFileSync(resolve(root, icon)))
+			.digest('hex') !== expectedIconHash
+	)
+		fail(`official Novu icon hash changed: ${icon}`);
 for (const gate of ['format:check', 'lint', 'typecheck', 'test', 'build', 'package:check']) {
 	if (
 		!ciWorkflow.includes(`npm run ${gate}`) &&

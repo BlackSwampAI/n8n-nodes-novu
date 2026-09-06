@@ -1,4 +1,4 @@
-# n8n-nodes-novu
+# @blackswampai/n8n-nodes-novu
 
 An independent n8n community integration for the Novu notification platform.
 
@@ -6,7 +6,7 @@ This project is not affiliated with, endorsed by, sponsored by, or maintained by
 
 ## Installation
 
-Installation is intentionally unavailable while this prerelease package remains private. A future release will follow the [n8n community-node installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
+Installation is intentionally unavailable while this package remains private. Do not attempt to install it from npm. Any future public release must first pass this repository's release-readiness review and follow the current [n8n community-node installation guidance](https://docs.n8n.io/integrations/community-nodes/installation-and-management/).
 
 ## Compatibility
 
@@ -56,7 +56,10 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run scan:source
 npm run package:check
+npm run smoke:load
+npm run smoke:install
 ```
 
 See [project status](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/STATUS.md), [ADR 0001](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/decisions/0001-node-architecture.md), and the [implementation gameplan](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/docs/Novu-n8n-Codex-Gameplan.md).
@@ -66,6 +69,7 @@ See [project status](https://github.com/BlackSwampAI/n8n-nodes-novu/blob/main/do
 - [Novu API reference](https://docs.novu.co/api-reference)
 - [n8n node development](https://docs.n8n.io/integrations/creating-nodes/)
 - [n8n community-node verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/)
+- [Brand provenance](docs/branding.md)
 
 ## License
 

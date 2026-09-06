@@ -3,4 +3,6 @@ node_modules/
 .npm-cache/
 *.tgz
 .vscode/
+nodes/Novu/novu.svg
+nodes/Novu/novu.dark.svg
 CODE_OF_CONDUCT.md

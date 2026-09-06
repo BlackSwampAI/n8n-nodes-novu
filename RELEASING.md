@@ -1,6 +1,6 @@
 # Releasing an n8n community node
 
-Releases are user-authorized and publish only from `.github/workflows/publish.yml`. Never run `npm publish` locally for an n8n release.
+This repository is private-initialization work and has no publish workflow. `private: true` is an intentional fail-closed publication guard. Never run `npm publish`, create release tags, or add publishing credentials while the package remains private.
 
 ## Finalize the generated repository
 
@@ -17,13 +17,16 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run scan:source
 npm run package:check
+npm run smoke:load
+npm run smoke:install
 git diff --check
 ```
 
 Inspect the dry-run tarball and install it in a disposable n8n instance. Verify node/credential loading, representative operations, error handling, and triggers where present. CI must pass on Node 22.22.0 and Node 24.
 
-## First publication only
+## Future first publication only
 
 npm requires a package to exist before Trusted Publisher configuration. For a genuinely new package, create a narrowly scoped, temporary granular token with publish access only to that package and store it only as the `NPM_TOKEN` Actions secret. After explicit user approval, tag the reviewed commit with an annotated immutable `v0.1.0` tag and let GitHub Actions publish with provenance.
 
