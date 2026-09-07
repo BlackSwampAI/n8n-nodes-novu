@@ -51,7 +51,6 @@ describe('published scanner retry policy', () => {
 
 	it('retries only exact known propagation failures for this version', () => {
 		for (const reason of [
-			'Reason: Analysis failed: Request failed with status code 404',
 			'Reason: No package metadata found for version 0.1.0',
 			"Reason: Could not fetch the source repository recorded in the package's npm provenance (Request failed with status code 404).",
 		])
@@ -72,6 +71,7 @@ describe('published scanner retry policy', () => {
 	it('rejects security output and unrelated failures immediately', () => {
 		for (const reason of [
 			'Reason: ESLint violations found\nfile.ts:404:3 error',
+			'Reason: Analysis failed: Request failed with status code 404',
 			'Reason: Analysis failed: Request timed out',
 			'Reason: Analysis failed: Request failed with status code 403',
 			'Reason: Analysis failed: Request failed with status code 429',
