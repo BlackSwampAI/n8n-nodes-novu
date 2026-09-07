@@ -16,3 +16,7 @@ Adopted in the Batch 7 working change:
 - release audits covering documentation, scoped identity, exact advertised resources, and private/no-publish state.
 
 Intentionally deferred until a separately reviewed release-preparation change: making the canonical homepage available; removing `private: true`; restoring a tag-only `publish.yml`; adding current npm authentication, version, provenance, and post-publication scanner helpers; and splitting irreversible publish from fresh read-only published verification. Those components are inapplicable while publication is blocked.
+
+## Template 2.0.1 — Batch 10 release-time controls
+
+The release-preparation change adopts the previously deferred public-package safeguards without changing the already-reviewed 2.0.1 marker: public package mode, tag-only Actions publication, minimum npm verification, first-publication token/bootstrap-to-OIDC handling, separate read-only published verification, exact scanner success, bounded propagation retries, and immutable tag/version checks. Novu-specific identity, resources, icon hash, documentation, examples, and package-load safeguards remain enforced.

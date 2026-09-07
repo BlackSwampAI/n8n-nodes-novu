@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-describe('private Novu Batch 9 release-candidate safeguards', () => {
-	it('has final working identity while publication stays blocked', async () => {
+describe('Novu Batch 10 public release-candidate safeguards', () => {
+	it('has the reviewed public release-candidate identity and release audit', async () => {
 		const packageJson = JSON.parse(await read('package.json')) as {
 			name: string;
 			private?: boolean;
@@ -19,7 +19,7 @@ describe('private Novu Batch 9 release-candidate safeguards', () => {
 		};
 
 		expect(packageJson.name).toBe('@blackswampai/n8n-nodes-novu');
-		expect(packageJson.private).toBe(true);
+		expect(packageJson.private).toBeUndefined();
 		expect(packageJson.repository.url).toBe('https://github.com/BlackSwampAI/n8n-nodes-novu.git');
 		expect(packageJson.dependencies ?? {}).toEqual({});
 		expect(packageJson.peerDependencies).toEqual({ 'n8n-workflow': '*' });
@@ -79,12 +79,12 @@ describe('private Novu Batch 9 release-candidate safeguards', () => {
 			expect(coverage).toContain(contract);
 		}
 		expect(adr).toContain('no runtime dependencies');
-		expect(releaseCheck).toContain('private initialization audit passed');
+		expect(releaseCheck).toContain('Release audit passed');
 		expect(packageCheck).toContain('template fixture artifact must not be packed');
 		expect(ci).toContain('branches: [main]');
 		expect(ci).toContain('pull_request:');
 		expect(releaseCheck).toContain('CI must run build before');
-		expect(releaseCheck).toContain('publish workflow must remain absent');
+		expect(releaseCheck).toContain("read('.github/workflows/publish.yml')");
 		expect(branding).toContain('cf904665b2916e631c29f3187d6afe5169a7db89');
 		expect(matrix).toContain('Topic Subscription / Delete');
 		expect(testing).toContain('npm run smoke:install');

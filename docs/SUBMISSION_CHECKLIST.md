@@ -20,11 +20,12 @@ Checked against current n8n guidance on 2026-09-06: [node development](https://d
 - [x] Canonical homepage observed HTTP 200 on 2026-09-06. Recheck content and links at release.
 - [ ] Recheck npm name immediately before publishing; its 2026-09-06 `E404` is availability evidence, not reservation.
 - [ ] Human approves the exact artifact, release notes, remaining limitations, and release-prep diff.
-- [ ] In a separate reviewed change, unset `private: true`, add `scan:published`, and restore tag-only `.github/workflows/publish.yml` with minimal permissions, immutable tag/version checks, and npm provenance. Since May 1, 2026, n8n requires GitHub Actions publication with provenance.
-- [ ] For the first package only, owner creates a narrowly scoped temporary granular npm token and stores it only as GitHub Actions `NPM_TOKEN`. Do not assume it currently exists and do not inspect secrets.
-- [ ] Keep publish and fresh read-only published-package/provenance scanning in separate dependent jobs; pass the full release audit before tagging.
+- [x] Release-preparation branch removes `private: true`, adds `scan:published`, and provides tag-only `.github/workflows/publish.yml` with minimal permissions, immutable tag/version checks, and npm provenance. Since May 1, 2026, n8n requires GitHub Actions publication with provenance.
+- [x] Owner confirms the narrowly scoped temporary granular token exists only as GitHub Actions `NPM_TOKEN`; never inspect or expose it.
+- [x] Publish and fresh read-only published-package/provenance scanning are separate dependent jobs.
+- [ ] Full release audit and ordinary CI pass on the exact reviewed release commit before tagging.
 - [ ] After explicit approval, create the immutable annotated version tag and let Actions publish. Never rerun a successful immutable publish job.
 - [ ] Verify npm version/latest, provenance, tarball, install/load, GitHub release, and Creator Portal submission.
-- [ ] Configure npm Trusted Publishing for the exact repository/workflow, then delete the GitHub secret and revoke the temporary token.
+- [ ] Configure npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, no environment; then delete the GitHub secret and revoke the temporary token.
 
 Approval, publication, tagging, and Creator Portal submission are Batch 10 human-controlled actions.

@@ -285,3 +285,23 @@ Batch 9: release-candidate qualification and documentation, including packed ins
 ## Next batch
 
 Batch 10: human release checkpoint, separately reviewed release preparation, publication authorization, npm/provenance verification, and Creator Portal submission.
+
+## Batch 10: release preparation
+
+- Status: implemented locally; awaiting orchestrator and human review
+- Branch: `release/0.1.0-preparation`
+- Pull request: TBD
+- Package: public release candidate `@blackswampai/n8n-nodes-novu@0.1.0`; no tag or publication has occurred
+
+### Prepared
+
+- Removed the private package guard and added a tag-only GitHub Actions workflow. The publish job alone has `id-token: write`; the dependent published verifier is fresh and read-only.
+- Added npm minimum-version and token/OIDC preparation helpers plus exact-success, bounded post-publication scanner policy and tests.
+- Preserved the Novu identity, resources, official icon hash, docs/examples, zero runtime dependencies, host-provided peer, and packed-load safeguards in the public release audit.
+- Made README/release documentation evergreen for an unverified self-hosted Community Nodes package. The owner confirms the first-publication `NPM_TOKEN` secret exists; its value was not inspected.
+
+### Evidence and remaining gates
+
+- Local validation on Node 24.18.0: formatting/check, official n8n lint, strict production/test typecheck, 169 Vitest tests across 13 files, build, official source/built scan, public release audit in both local and exact `v0.1.0` tag contexts, package boundary (60 files, 35,977 packed bytes, 191,957 unpacked bytes), workspace and isolated packed-install loading of exactly 1 node and 1 credential, npm minimum-version verification with npm 11.16.0, and `git diff --check` passed. The isolated install and npm-version process checks required execution outside the managed sandbox after sandboxed child-process spawning returned `EPERM`. Existing missing `n8n-workflow` sourcemap-source warnings remain non-failing advisories.
+- PR/default-branch/tag CI, the immutable `v0.1.0` tag, Actions publication, npm version/latest/provenance, published scanner result, published package install/load, Trusted Publisher migration, token deletion/revocation, GitHub release, and Creator Portal submission/version/logo are future human-authorized or post-publication gates.
+- Existing limited local editor/Cloud and source-checkout icon observations remain as recorded in Batch 9. Exact live versions, complete operation coverage, delivery, packed-editor visuals, and pinned self-hosted evidence remain incomplete.

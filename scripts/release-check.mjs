@@ -22,6 +22,10 @@ const hasPlaceholder = (value) =>
 
 const packageJson = JSON.parse(read('package.json'));
 const readme = read('README.md');
+const releasing = read('RELEASING.md');
+const sourceScanner = read('scripts/scan-source.mjs');
+const publishedScanner = read('scripts/scan-published.mjs');
+const publishWorkflow = read('.github/workflows/publish.yml');
 const ciWorkflow = read('.github/workflows/ci.yml');
 let origin = '';
 try {
@@ -39,7 +43,6 @@ try {
 	);
 }
 const isTemplateMode = origin === TEMPLATE_ORIGIN;
-const isPrivateInitialization = !isTemplateMode && packageJson.private === true;
 
 for (const path of [
 	'LICENSE.md',
@@ -48,6 +51,7 @@ for (const path of [
 	'vitest.config.mts',
 	'tsconfig.test.json',
 	'.github/workflows/ci.yml',
+	'.github/workflows/publish.yml',
 	'.blackswamp/template.json',
 	'docs/branding.md',
 	'docs/api-matrix.md',
@@ -76,6 +80,10 @@ for (const script of [
 	'package:check',
 	'release',
 	'prepublishOnly',
+	'scan:source',
+	'scan:published',
+	'smoke:load',
+	'smoke:install',
 ]) {
 	if (!packageJson.scripts?.[script]) fail(`package.json script ${script} is required`);
 }
@@ -110,9 +118,54 @@ if (packageJson.peerDependencies?.['n8n-workflow'] !== '*')
 if (packageJson.n8n?.strict !== true) fail('n8n.strict must be true');
 if (packageJson.files?.length !== 1 || packageJson.files[0] !== 'dist')
 	fail('package files must expose only dist');
-if (existsSync(resolve(root, '.github/workflows/publish.yml')))
-	fail('publish workflow must remain absent while package.json is private');
-for (const [label, workflow] of [['CI', ciWorkflow]]) {
+if (!publishWorkflow.includes("- 'v*.*.*'")) fail('publish must be tag-only');
+if (!/timeout-minutes:\s*30/.test(publishWorkflow))
+	fail('publish must have a 30-minute job timeout');
+const [publishJob, verifyPublishedJob = ''] = publishWorkflow.split(/\n {2}verify-published:\s*\n/);
+const publishPreamble = publishJob.slice(0, publishJob.indexOf('\njobs:'));
+if (/id-token:\s*write/.test(publishPreamble))
+	fail('id-token: write must be scoped to the publish job');
+if (!/id-token:\s*write/.test(publishJob) || !/contents:\s*read/.test(publishJob))
+	fail('publish job permissions are incomplete');
+if (
+	!/needs:\s*publish/.test(verifyPublishedJob) ||
+	!verifyPublishedJob.includes('actions/checkout@v6') ||
+	!verifyPublishedJob.includes('actions/setup-node@v6') ||
+	!verifyPublishedJob.includes('package-manager-cache: false') ||
+	!verifyPublishedJob.includes('npm install --global npm@11.19.0') ||
+	!verifyPublishedJob.includes('npm ci') ||
+	!verifyPublishedJob.includes('npm run scan:published') ||
+	!/contents:\s*read/.test(verifyPublishedJob) ||
+	!/timeout-minutes:\s*30/.test(verifyPublishedJob)
+)
+	fail(
+		'verify-published must be a fresh, pinned-toolchain, read-only, bounded job that depends on publish',
+	);
+if (publishJob.includes('npm run scan:published') || verifyPublishedJob.includes('npm run release'))
+	fail('publication and published verification must remain separate jobs');
+if (/id-token:\s*write/.test(verifyPublishedJob))
+	fail('verify-published must not receive id-token: write');
+if (!publishWorkflow.includes('secrets.NPM_TOKEN'))
+	fail('publish must retain first-publication token bootstrap support');
+for (const path of [
+	'scripts/prepare-npm-auth.mjs',
+	'scripts/verify-npm-version.mjs',
+	'scripts/scan-published.mjs',
+	'scripts/scan-policy.mjs',
+])
+	if (!existsSync(resolve(root, path))) fail(`${path} is required`);
+if (!publishedScanner.includes('has passed all security checks'))
+	fail('published scan must require explicit official scanner success');
+if (
+	!sourceScanner.includes('SOURCE_FILE_PATTERNS') ||
+	!sourceScanner.includes("'dist/**/*.js'") ||
+	!sourceScanner.includes("'package.json'")
+)
+	fail('source scanner must inspect source and built-package patterns');
+for (const [label, workflow] of [
+	['CI', ciWorkflow],
+	['publish', publishWorkflow],
+]) {
 	if (!workflow.includes('npm install --global npm@11.19.0')) {
 		fail(`${label} workflow must install npm 11.19.0 before npm ci`);
 	}
@@ -135,7 +188,7 @@ if (packageJson.name !== '@blackswampai/n8n-nodes-novu')
 	fail('scoped package identity is required');
 if (packageJson.homepage !== 'https://blackswampai.com/n8n-nodes/novu/')
 	fail('canonical homepage is required');
-if (packageJson.private !== true) fail('private publication guard must remain enabled');
+if (packageJson.private === true) fail('public release candidate must not be private');
 if (packageJson.n8n?.nodes?.length !== 1 || packageJson.n8n?.credentials?.length !== 1)
 	fail('compiled node and credential registrations are required');
 const marker = JSON.parse(read('.blackswamp/template.json'));
@@ -161,6 +214,33 @@ for (const gate of ['format:check', 'lint', 'typecheck', 'test', 'build', 'packa
 	) {
 		fail(`CI must run npm run ${gate}`);
 	}
+}
+for (const [label, workflow] of [
+	['CI', ciWorkflow],
+	['publish', publishWorkflow],
+]) {
+	const build = workflow.indexOf('npm run build');
+	const scan = workflow.indexOf('npm run scan:source');
+	const pack = workflow.indexOf('npm run package:check');
+	if (build < 0 || scan < build || pack < scan)
+		fail(`${label} must scan source/built output after build and before packaging`);
+	for (const command of ['npm run smoke:load', 'npm run smoke:install'])
+		if (!workflow.includes(command)) fail(`${label} must run ${command}`);
+}
+for (const command of ['node scripts/verify-npm-version.mjs', 'node scripts/prepare-npm-auth.mjs'])
+	if (!publishJob.includes(command)) fail(`publish must run ${command}`);
+if (
+	/private prerelease|installation is intentionally unavailable|do not attempt to install/i.test(
+		readme,
+	)
+)
+	fail('README contains private/unavailable release-state wording');
+if (/npm publish/.test(releasing) && !/Never run `npm publish` locally/.test(releasing))
+	fail('RELEASING must prohibit local npm publish');
+if (process.env.GITHUB_REF_TYPE === 'tag') {
+	const expectedTag = `v${packageJson.version}`;
+	if (process.env.GITHUB_REF_NAME !== expectedTag)
+		fail(`release tag must exactly match package version (${expectedTag})`);
 }
 
 if (isTemplateMode) {
@@ -189,9 +269,6 @@ if (isTemplateMode) {
 	]) {
 		if (!value || hasPlaceholder(value)) fail(`package.json ${label} is missing or a placeholder`);
 	}
-	if (isPrivateInitialization && !readme.includes('private scaffold'))
-		if (!readme.includes('private prerelease'))
-			fail('private initialization README must identify the package as a private prerelease');
 	if (packageJson.license !== 'MIT' || packageJson.publishConfig?.access !== 'public')
 		fail('normal mode requires MIT and public publish config');
 	if (!packageJson.keywords?.includes('n8n-community-node-package'))
@@ -204,6 +281,7 @@ if (isTemplateMode) {
 		'## Compatibility',
 		'## Credentials',
 		'## Operations',
+		'## Troubleshooting',
 		'## Resources',
 		'## License',
 	]) {
@@ -276,7 +354,5 @@ if (failures.length) {
 console.log(
 	isTemplateMode
 		? 'Template audit passed in fail-closed private mode'
-		: isPrivateInitialization
-			? `Fail-closed private initialization audit passed for ${packageJson.name}@${packageJson.version}; npm publication remains blocked`
-			: `Release audit passed for ${packageJson.name}@${packageJson.version}`,
+		: `Release audit passed for ${packageJson.name}@${packageJson.version}`,
 );

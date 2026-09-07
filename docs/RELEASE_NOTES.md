@@ -1,4 +1,4 @@
-# Proposed release notes: 0.1.0
+# Release notes: 0.1.0
 
 Initial independent n8n community-node release for Novu notification workflows.
 
@@ -13,4 +13,4 @@ Highlights:
 
 Important limitations: this package is independent and not official or verified. Trigger acknowledgment does not prove channel delivery. Broadcast, bulk APIs, workflow editing, providers, webhooks, Inbox state, agents/ACI, raw requests, and automatic legacy fallback are not included. Self-hosted compatibility is unverified. See the README and API coverage for exact behavior.
 
-Publication remains blocked until the Batch 10 human release checkpoint removes `private: true`, restores a reviewed tag-only provenance workflow, and completes publication verification.
+Release remains subject to the human authorization, immutable tag, GitHub Actions publication, npm/provenance verification, and Creator Portal gates documented in `RELEASING.md`.
