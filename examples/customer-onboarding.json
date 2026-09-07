@@ -1,0 +1,89 @@
+{
+	"name": "Novu - Customer Onboarding",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "manual",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "subscriber",
+							"name": "subscriberId",
+							"value": "bsa-example-customer-001",
+							"type": "string"
+						},
+						{
+							"id": "email",
+							"name": "email",
+							"value": "example@example.invalid",
+							"type": "string"
+						},
+						{ "id": "first", "name": "firstName", "value": "Example", "type": "string" }
+					]
+				},
+				"options": {}
+			},
+			"id": "input",
+			"name": "Example Customer",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [220, 0]
+		},
+		{
+			"parameters": {
+				"resource": "subscriber",
+				"operation": "createOrUpdate",
+				"subscriberId": "={{ $json.subscriberId }}",
+				"fields": {
+					"email": "={{ $json.email }}",
+					"firstName": "={{ $json.firstName }}",
+					"data": "={{ { \"source\": \"n8n-example\", \"onboarding\": true } }}"
+				},
+				"clearFields": [],
+				"failIfExists": false
+			},
+			"id": "subscriber",
+			"name": "Create or Update Subscriber",
+			"type": "@blackswampai/n8n-nodes-novu.novu",
+			"typeVersion": 1,
+			"position": [460, 0]
+		},
+		{
+			"parameters": {
+				"resource": "notification",
+				"operation": "triggerWorkflow",
+				"workflowIdentifier": { "mode": "id", "value": "replace-with-workflow-id" },
+				"recipientType": "subscriber",
+				"subscriberId": "={{ $('Example Customer').item.json.subscriberId }}",
+				"payload": "={{ { \"firstName\": $('Example Customer').item.json.firstName, \"source\": \"n8n-example\" } }}",
+				"triggerOptions": {}
+			},
+			"id": "trigger",
+			"name": "Trigger Onboarding Workflow",
+			"type": "@blackswampai/n8n-nodes-novu.novu",
+			"typeVersion": 1,
+			"position": [700, 0]
+		}
+	],
+	"connections": {
+		"Manual Trigger": { "main": [[{ "node": "Example Customer", "type": "main", "index": 0 }]] },
+		"Example Customer": {
+			"main": [[{ "node": "Create or Update Subscriber", "type": "main", "index": 0 }]]
+		},
+		"Create or Update Subscriber": {
+			"main": [[{ "node": "Trigger Onboarding Workflow", "type": "main", "index": 0 }]]
+		}
+	},
+	"active": false,
+	"settings": {},
+	"versionId": "11111111-1111-4111-8111-111111111111",
+	"meta": { "templateCredsSetupCompleted": false },
+	"tags": []
+}

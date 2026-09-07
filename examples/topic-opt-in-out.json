@@ -1,0 +1,115 @@
+{
+	"name": "Novu - Topic Opt In and Out",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "manual",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "topic",
+							"name": "topicKey",
+							"value": "bsa-example-product-updates",
+							"type": "string"
+						},
+						{
+							"id": "subscriber",
+							"name": "subscriberId",
+							"value": "bsa-example-customer-001",
+							"type": "string"
+						},
+						{
+							"id": "relationship",
+							"name": "relationshipId",
+							"value": "product-updates",
+							"type": "string"
+						}
+					]
+				},
+				"options": {}
+			},
+			"id": "input",
+			"name": "Example Subscription",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [220, 0]
+		},
+		{
+			"parameters": {
+				"resource": "topic",
+				"operation": "createOrUpdate",
+				"topicKey": "={{ $json.topicKey }}",
+				"topicFields": { "name": "Example Product Updates" },
+				"failIfExists": false
+			},
+			"id": "topic",
+			"name": "Create or Update Topic",
+			"type": "@blackswampai/n8n-nodes-novu.novu",
+			"typeVersion": 1,
+			"position": [460, 0]
+		},
+		{
+			"parameters": {
+				"resource": "topicSubscription",
+				"operation": "create",
+				"topicKey": "={{ $('Example Subscription').item.json.topicKey }}",
+				"subscriptions": {
+					"subscription": [
+						{
+							"subscriberId": "={{ $('Example Subscription').item.json.subscriberId }}",
+							"identifier": "={{ $('Example Subscription').item.json.relationshipId }}"
+						}
+					]
+				}
+			},
+			"id": "optin",
+			"name": "Opt In",
+			"type": "@blackswampai/n8n-nodes-novu.novu",
+			"typeVersion": 1,
+			"position": [700, 0]
+		},
+		{
+			"parameters": {
+				"resource": "topicSubscription",
+				"operation": "delete",
+				"topicKey": "={{ $('Example Subscription').item.json.topicKey }}",
+				"subscriptions": {
+					"subscription": [
+						{
+							"subscriberId": "={{ $('Example Subscription').item.json.subscriberId }}",
+							"identifier": "={{ $('Example Subscription').item.json.relationshipId }}"
+						}
+					]
+				}
+			},
+			"id": "optout",
+			"name": "Opt Out (Optional)",
+			"type": "@blackswampai/n8n-nodes-novu.novu",
+			"typeVersion": 1,
+			"position": [940, 0],
+			"disabled": true
+		}
+	],
+	"connections": {
+		"Manual Trigger": {
+			"main": [[{ "node": "Example Subscription", "type": "main", "index": 0 }]]
+		},
+		"Example Subscription": {
+			"main": [[{ "node": "Create or Update Topic", "type": "main", "index": 0 }]]
+		},
+		"Create or Update Topic": { "main": [[{ "node": "Opt In", "type": "main", "index": 0 }]] },
+		"Opt In": { "main": [[{ "node": "Opt Out (Optional)", "type": "main", "index": 0 }]] }
+	},
+	"active": false,
+	"settings": {},
+	"versionId": "22222222-2222-4222-8222-222222222222",
+	"meta": { "templateCredsSetupCompleted": false },
+	"tags": []
+}

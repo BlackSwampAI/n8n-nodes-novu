@@ -1,9 +1,11 @@
 # Branding
 
-The node uses Novu's official adaptive square dashboard favicon byte-for-byte for both n8n themes. Source: `apps/dashboard/public/favicon.svg` in [`novuhq/novu` commit `dc9caee828136e25db2400433e2f67e2193f964c`](https://github.com/novuhq/novu/blob/dc9caee828136e25db2400433e2f67e2193f964c/apps/dashboard/public/favicon.svg), accessed 2026-09-06.
+The node uses Novu's official full-color square dashboard favicon byte-for-byte for both n8n themes. Source: `apps/dashboard/public/favicon-gradient.svg` in immutable [`novuhq/novu` commit `cf904665b2916e631c29f3187d6afe5169a7db89`](https://github.com/novuhq/novu/blob/cf904665b2916e631c29f3187d6afe5169a7db89/apps/dashboard/public/favicon-gradient.svg), retrieved 2026-09-06.
 
-Both source icons have SHA-256 `20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8`. The upstream asset has a square `0 0 2000 2000` viewBox and adapts its black/white fill using `prefers-color-scheme`, so the same unmodified asset is appropriate for light and dark registrations. Package validation checks both files and their hashes.
+Both registered files have SHA-256 `cb594d2b275dc9308df325c348388b9395d7eae615b366ef9f9ba02267b08c82`. The upstream asset has a square `0 0 2000 2000` viewBox and an orange-to-magenta gradient. The same unmodified full-color asset serves light and dark registrations; package validation checks both files and hashes.
 
-Source and packed-file checks do not establish presentation quality. Light/dark rendering in the actual n8n editor and the independently stored Creator Portal card/version remain visual human gates; neither has been inspected through Batch 8.
+The same `apps/dashboard/public/favicon-gradient.svg` was also present on Novu's current default `next` branch on 2026-09-06 and independently matched that immutable-source SHA-256. This source comparison is not editor-rendering evidence.
+
+The owner completed the requested pre-release source-checkout visual check in an actual local n8n editor and reported the official gradient icon was “perfect” before authorizing the next step. This confirms the requested node picker, canvas, node panel, and credential-form surfaces in light and dark themes. Exact n8n version and screenshots were not recorded. Packed-tarball visual confirmation and the independently stored Creator Portal card/version remain separate open gates.
 
 This independent Black Swamp AI integration is not affiliated with, endorsed by, sponsored by, or maintained by Novu. The Novu name and logo belong to their respective owner and are used only to identify compatibility.

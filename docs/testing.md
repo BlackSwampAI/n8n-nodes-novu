@@ -33,9 +33,9 @@ git diff --check
 ## Unexecuted tiers and guards
 
 - Live Novu API: requires an owner-controlled development environment, explicit test credential, run-scoped subscriber/topic identifiers, exact cleanup, and low-cost test workflows. Never enable destructive tests from credential presence alone.
-- Actual n8n: install the packed artifact into a clean supported instance, then inspect credential conditionals, all resource/operation states, expressions, pairing, continuation, and light/dark icons. A constructor load is not editor evidence.
+- Actual n8n: the owner confirmed the source-checkout gradient icon rendered correctly on the requested light/dark editor surfaces, without recording the exact n8n version or screenshots. The broader structured checklist remains open: install the packed artifact into a clean supported instance, then inspect credential conditionals, all resource/operation states, expressions, pairing, continuation, and packed light/dark icons. A constructor load or source-checkout visual is not packed-artifact evidence.
 - Self-hosted Novu: requires a specifically pinned release and edition; no parity is inferred from Cloud docs.
 - Delivery: inspect Novu activity/inbox or an owner-controlled test inbox. Trigger acknowledgments prove acceptance/processing only.
 - Creator Portal: applies only after authorized npm publication/submission; visually verify the exact submitted version and logo independently of npm/editor state.
 
-No credentials, live API calls, provider delivery, editor session, self-hosted instance, or Portal submission have been used through Batch 8. See [project status](STATUS.md) for batch-specific evidence.
+The owner exercised the node in a local n8n editor against Novu Cloud and reported the post-envelope-fix experience as much better and otherwise solid. The owner separately confirmed the requested source-checkout gradient icon surfaces in both themes as “perfect.” Exact versions, screenshots, packed-artifact visuals, and operation-by-operation results were not recorded; this does not satisfy the broader structured live/editor tier. No provider delivery, pinned self-hosted, or Creator Portal evidence exists. Use [the manual smoke checklist](SMOKE_TESTS.md) to close those gaps. See [project status](STATUS.md) for batch-specific evidence.

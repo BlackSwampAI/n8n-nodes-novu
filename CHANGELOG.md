@@ -10,3 +10,5 @@
 - Add Batch 6 Topic lifecycle operations with flat custom data and forward cursor pagination.
 - Add Batch 7 Topic Subscription lifecycle operations and Topic workflow recipients.
 - Add Batch 8 Workflow discovery, searchable/manual workflow selection, and pending execution cancellation.
+- Correct ordinary Novu raw HTTP response-envelope handling while preserving direct list/subscription envelopes.
+- Add Batch 9 release-candidate documentation, sanitized workflows, manual smoke/submission checklists, and the immutable official gradient icon.

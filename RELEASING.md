@@ -4,7 +4,7 @@ This repository is private-initialization work and has no publish workflow. `pri
 
 ## Current private state
 
-The working identity is `@blackswampai/n8n-nodes-novu@0.1.0`, but it is not installable from npm. The canonical homepage currently returns HTTP 404 and is an external release blocker. The package must stay private and without a publish workflow until the human release checkpoint.
+The working identity is `@blackswampai/n8n-nodes-novu@0.1.0`, but it is not installable from npm. On 2026-09-06 the repository was observed public with default branch `main`, the canonical homepage returned HTTP 200, and npm returned `E404` for the package name (availability evidence, not reservation). Recheck all three at release. The package must stay private and without a publish workflow until the human release checkpoint.
 
 ## Prepublication gate
 
@@ -30,7 +30,7 @@ Inspect the dry-run tarball and install it in a disposable n8n instance. Verify 
 
 Before any tag, a dedicated release-preparation change must:
 
-1. provision and verify `https://blackswampai.com/n8n-nodes/novu/`;
+1. recheck the public repository and `https://blackswampai.com/n8n-nodes/novu/` content and links;
 2. recheck scoped npm/package naming, repository links, current n8n rules, and every evidence tier;
 3. unset `private: true` only at the explicit human checkpoint;
 4. restore a tag-only `publish.yml` with minimal permissions and immutable version/tag checks;
@@ -42,7 +42,7 @@ None of those release-only components belong in the private prerelease package.
 
 ## Future first publication only
 
-npm requires a package to exist before Trusted Publisher configuration. For a genuinely new package, create a narrowly scoped, temporary granular token with publish access only to that package and store it only as the `NPM_TOKEN` Actions secret. After explicit user approval, tag the reviewed commit with an annotated immutable `v0.1.0` tag and let GitHub Actions publish with provenance.
+npm requires a package to exist before Trusted Publisher configuration. For this genuinely new package, the owner plans to create a narrowly scoped, temporary granular token and store it only as the `NPM_TOKEN` Actions secret. Do not assume the secret exists or inspect secrets. After explicit user approval, tag the reviewed commit with an annotated immutable `v0.1.0` tag and let GitHub Actions publish with provenance.
 
 Immediately after success, configure npm Trusted Publishing for the exact GitHub owner, repository, tag-only `publish.yml`, and no environment unless the workflow declares one. Delete the GitHub secret and revoke the token. Existing packages skip token bootstrap and use OIDC from the first release.
 
