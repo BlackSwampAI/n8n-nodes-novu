@@ -1,14 +1,10 @@
 # Releasing an n8n community node
 
-This repository is private-initialization work and has no publish workflow. `private: true` is an intentional fail-closed publication guard. Never run `npm publish`, create release tags, or add publishing credentials while the package remains private.
+Release `@blackswampai/n8n-nodes-novu` only through the tag-triggered GitHub Actions workflow. Never run `npm publish` locally. npm versions and release tags are immutable; fixes ship as a new version.
 
-## Current private state
+## Before tagging
 
-The working identity is `@blackswampai/n8n-nodes-novu@0.1.0`, but it is not installable from npm. On 2026-09-06 the repository was observed public with default branch `main`, the canonical homepage returned HTTP 200, and npm returned `E404` for the package name (availability evidence, not reservation). Recheck all three at release. The package must stay private and without a publish workflow until the human release checkpoint.
-
-## Prepublication gate
-
-Run on the exact release commit:
+Confirm the public repository/default branch, canonical homepage, scoped npm name, package metadata, current n8n requirements, and every evidence tier. Run the full gate on the exact reviewed commit:
 
 ```sh
 npm ci
@@ -18,34 +14,31 @@ npm run typecheck
 npm test
 npm run build
 npm run scan:source
+npm run release:check
 npm run package:check
 npm run smoke:load
 npm run smoke:install
 git diff --check
 ```
 
-Inspect the dry-run tarball and install it in a disposable n8n instance. Verify node/credential loading, representative operations, error handling, and triggers where present. CI must pass on Node 22.22.0 and Node 24.
+Require green ordinary CI on that commit, inspect the packed artifact in a supported disposable n8n instance, and review the release notes and remaining evidence gaps. The user must explicitly authorize the release before an annotated `v<version>` tag is created and pushed.
 
-## Separately reviewed release preparation
+## First publication authentication
 
-Before any tag, a dedicated release-preparation change must:
+Because npm requires the package to exist before Trusted Publisher setup, the first publication uses the existing narrowly scoped temporary granular token in GitHub Actions secret `NPM_TOKEN`. The workflow preserves token configuration when the secret is present. Future OIDC runs remove only setup-node's literal empty token placeholder; they never broadly delete npm configuration.
 
-1. recheck the public repository and `https://blackswampai.com/n8n-nodes/novu/` content and links;
-2. recheck scoped npm/package naming, repository links, current n8n rules, and every evidence tier;
-3. unset `private: true` only at the explicit human checkpoint;
-4. restore a tag-only `publish.yml` with minimal permissions and immutable version/tag checks;
-5. add the current npm authentication, version, provenance, and post-publication scanner helpers;
-6. keep irreversible publication in a publish job and fresh read-only registry/provenance/package scanning in a dependent verify-published job; and
-7. pass the full release audit on the exact reviewed commit before creating a tag.
+Immediately after the first successful publication:
 
-None of those release-only components belong in the private prerelease package.
+1. Configure npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, with no GitHub Environment.
+2. Delete the GitHub `NPM_TOKEN` secret.
+3. Revoke the temporary granular npm token.
 
-## Future first publication only
+Those credential changes are human-only. Never print, inspect, or store the token elsewhere.
 
-npm requires a package to exist before Trusted Publisher configuration. For this genuinely new package, the owner plans to create a narrowly scoped, temporary granular token and store it only as the `NPM_TOKEN` Actions secret. Do not assume the secret exists or inspect secrets. After explicit user approval, tag the reviewed commit with an annotated immutable `v0.1.0` tag and let GitHub Actions publish with provenance.
+## Publish and verify
 
-Immediately after success, configure npm Trusted Publishing for the exact GitHub owner, repository, tag-only `publish.yml`, and no environment unless the workflow declares one. Delete the GitHub secret and revoke the token. Existing packages skip token bootstrap and use OIDC from the first release.
+The `publish` job runs all deterministic/package gates, prepares authentication, and invokes `npm run release` with provenance. The fresh dependent `verify-published` job is read-only and runs the official scanner against the exact published package/version. Only the publish job receives `id-token: write`.
 
-## Verify and preserve history
+If publication succeeded but propagation delayed verification, use **Re-run failed jobs** so only the verifier reruns. Never rerun a successful immutable publish job. Require npm version/latest, SLSA provenance, exact scanner success, tarball contents/load, tag CI, and the GitHub release before calling the release complete.
 
-Verify the workflow, npm version and `latest` tag, SLSA provenance attestation, package contents/load smoke, and matching GitHub release. Never reuse an npm version or move/delete a published tag; fix forward with a new version.
+Creator Portal submission is a separate human gate. Record the exact submitted version and visually inspect the Portal card version/logo independently of source, packed, npm, and editor presentation.

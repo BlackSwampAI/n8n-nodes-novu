@@ -12,15 +12,16 @@ assignees: ''
 - [ ] README installation, compatibility, credentials, operations, and license sections complete
 - [ ] `npm ci`, format check, lint, strict production/test typecheck, Vitest, build, release audit, and dry-run package checks pass
 - [ ] Packed artifact installs or loads successfully in a disposable n8n instance
-- [ ] Separately reviewed release-prep change unsets `private: true` only after explicit human approval
-- [ ] Tag-only `publish.yml` restored with minimal permissions and current auth/version/provenance helpers
-- [ ] Publication and fresh read-only published-package/provenance/scanner verification are separate dependent jobs
+- [x] Release-prep change removes `private: true` for human review
+- [x] Tag-only `publish.yml` added with minimal permissions and current auth/version/provenance helpers
+- [x] Publication and fresh read-only published-package/provenance/scanner verification are separate dependent jobs
 - [ ] Full release audit passes on the exact reviewed commit before tagging
-- [ ] Owner creates the planned temporary granular npm token and stores it only as GitHub Actions secret `NPM_TOKEN`; do not assume it exists or inspect secrets
+- [x] Owner confirms the temporary granular npm token exists as GitHub Actions secret `NPM_TOKEN`; never inspect or expose it
 - [ ] Release commit is on `main` and CI is green
 - [ ] User explicitly authorizes release and annotated immutable `v0.1.0` tag points to the reviewed release commit
 - [ ] Publish workflow succeeds
 - [ ] npm `latest` is `0.1.0` and SLSA provenance is present
 - [ ] GitHub release exists
-- [ ] npm Trusted Publisher configured for the tag-only `publish.yml`
+- [ ] npm Trusted Publisher configured for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, no environment
 - [ ] `NPM_TOKEN` secret deleted and temporary npm token revoked
+- [ ] Creator Portal submitted for exact version and card version/logo inspected

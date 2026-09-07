@@ -7,7 +7,8 @@ The package uses a layered evidence model. Passing a lower tier never implies a 
 - TypeScript Vitest tests cover helpers, metadata, per-item execution, malformed inputs/responses, paging, continuation, retry confinement, and scaffold/release invariants using documented response shapes and deterministic mocks.
 - `npm run scan:source` runs the official n8n community-package scanner against both source patterns and built JavaScript/package metadata. Findings are release gates; scanner development advisories remain advisories unless the tool reports failure.
 - `npm run smoke:load` loads the registered node and credential constructors from the workspace build, verifies credential references, and validates packaged SVG/PNG icon confinement and SVG viewBoxes.
-- `npm run package:check` performs the private release audit and dry-run tarball allowlist check.
+- `npm run package:check` performs the public release-candidate audit and dry-run tarball allowlist check.
+- `npm run scan:published` is reserved for the fresh read-only post-publication job. It requires exact official scanner success and retries only bounded, recognized registry/provenance propagation failures.
 - `npm run smoke:install` packs the package, installs it without lifecycle scripts, a lockfile, or peer installation in an owned temporary consumer, supplies only the development tree's host-provided `n8n-workflow` peer, and reruns the constructor/icon smoke against the installed copy.
 
 ## Exact local gate

@@ -2,11 +2,11 @@
 
 An independent n8n community integration for the Novu notification platform.
 
-This project is not affiliated with, endorsed by, sponsored by, or maintained by Novu or n8n. Product names and marks belong to their respective owners and are used only to identify compatibility. The package is a private prerelease: it is not official, approved, verified, or ready to publish.
+This project is not affiliated with, endorsed by, sponsored by, or maintained by Novu or n8n. Product names and marks belong to their respective owners and are used only to identify compatibility. The package is not official, approved, or verified by n8n or Novu.
 
 ## Installation
 
-Installation is intentionally unavailable while this package remains private. Do not attempt to install it from npm. Any future public release must first pass this repository's release-readiness review and follow the current [n8n community-node installation guidance](https://docs.n8n.io/integrations/community-nodes/installation-and-management/).
+This is an unverified community package for self-hosted n8n. In n8n, open **Settings → Community Nodes**, select **Install**, enter `@blackswampai/n8n-nodes-novu`, accept the community-node risk prompt, and install. See n8n's [manual Community Nodes installation guide](https://docs.n8n.io/integrations/community-nodes/installation-and-management/gui-installation/). It is not available through verified-node discovery unless n8n later approves it.
 
 ## Compatibility
 
@@ -84,7 +84,7 @@ After import, select your Novu API credential, replace every `bsa-example-*` val
 - **Workflow trigger succeeds but no message arrives:** the returned acknowledgment is acceptance/processing evidence, not delivery. Inspect the workflow's active state, steps, Novu activity, subscriber preferences, and provider/test inbox.
 - **Topic results differ from subscriber count:** Novu performs topic fan-out, and a subscriber may have multiple relationships. Partial subscription mutation details remain in `meta` and `errors`.
 - **Retry is unavailable or rejected:** the bounded trigger retry requires a nonempty Idempotency Key and organization-level Novu idempotency support. Do not stack it with n8n node retries.
-- **Installation fails:** npm installation is intentionally unavailable while `private: true` remains. Development checks operate from a source checkout and packed local artifact only.
+- **Installation fails:** confirm this is a self-hosted n8n instance with Community Nodes enabled, enter the exact scoped package name, and inspect the n8n logs. This package is not available through verified-node discovery unless n8n approves it.
 
 See the [changelog](CHANGELOG.md), [operation matrix](docs/api-matrix.md), and [testing evidence guide](docs/testing.md) when diagnosing version or contract behavior.
 
