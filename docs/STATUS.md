@@ -290,7 +290,7 @@ Batch 10: human release checkpoint, separately reviewed release preparation, pub
 
 - Status: implemented locally; awaiting orchestrator and human review
 - Branch: `release/0.1.0-preparation`
-- Pull request: TBD
+- Pull request: draft [#12](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/12)
 - Package: public release candidate `@blackswampai/n8n-nodes-novu@0.1.0`; no tag or publication has occurred
 
 ### Prepared
