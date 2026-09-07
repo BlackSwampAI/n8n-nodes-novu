@@ -224,9 +224,10 @@ Batch 8: Workflow discovery and pending execution cancellation.
 
 ## Batch 8: workflow discovery and pending execution cancellation
 
-- Status: implemented locally; awaiting orchestrator and human review
-- Branch: `batch-8-workflow-discovery-cancellation`
-- Pull request: draft [#9](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/9), awaiting human review
+- Status: complete and merged
+- Branch: merged into `main`
+- Pull request: merged [#9](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/9)
+- Merge commit: `76109a3`
 - Base commit: `363f5140e129362fd8c1ed71a8d118a990fa8fef`
 - Package: remains private `@blackswampai/n8n-nodes-novu@0.1.0`
 
@@ -243,7 +244,7 @@ Batch 8: Workflow discovery and pending execution cancellation.
 - Deterministic mocks cover exact metadata, locator normalization and blank states, trigger selection, workflow retrieval, list filters/ordering/multipage limits/empty/malformed/no-progress behavior, per-item pairing/continuation, list-search filtering/tokens/results/errors, and cancellation true/false/encoding/errors.
 - Local validation on Node 24.18.0: format/write and format check, official n8n lint, strict production/test typecheck, 159 Vitest tests across 11 files, build, official source/built scanner, private release audit, package boundary (57 files, 35,087 packed bytes, 187,983 unpacked bytes), workspace constructor/icon load, and `git diff --check` passed. The orchestrator ran `npm run smoke:install` outside the managed sandbox; compiled registration of exactly 1 node and 1 credential passed, followed by the isolated packed-package install/load. Known upstream `n8n-workflow` missing-sourcemap warnings remain non-failing advisories.
 - No credentials, live Novu API request, actual n8n editor execution, Cloud or pinned self-hosted environment, delivery observation, or Creator Portal check was performed. Endpoint permissions, observed paging, cancellation eligibility, editor locator rendering, and self-hosted compatibility remain unverified.
-- The scoped npm name still requires a prepublication recheck. The canonical homepage `https://blackswampai.com/n8n-nodes/novu/` remains recorded as HTTP 404 and blocks release preparation.
+- The scoped npm name still requires a prepublication recheck.
 
 ## Next batch
 
@@ -251,10 +252,36 @@ Batch 9: release-candidate qualification and documentation, including packed ins
 
 ## Raw HTTP response-envelope hardening
 
-- Status: implemented on `fix/novu-response-envelopes`; awaiting review
-- Pull request: draft [#10](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/10)
+- Status: complete and merged
+- Pull request: merged [#10](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/10)
+- Merge commit: `00e97fe`
 - Scope: unwrap exactly one Novu ResponseInterceptor `{ data: payload }` layer at ordinary-response call sites for Subscriber, Subscriber Preference, Topic, Notification, and Workflow. Subscriber/Topic cursor lists and Topic Subscription list/mutation envelopes remain direct.
 - User-observed Cloud evidence: live failures exposed a mismatch between the SDK-level payload shapes published in the API reference and raw Cloud HTTP responses wrapped by Novu's global response interceptor. Current Novu source confirms ordinary payload wrapping and the direct treatment of response objects that already contain top-level `data`.
 - Deterministic evidence: fixtures now represent raw wrapped entity, acknowledgment, preference, workflow-list, list-search, and boolean-cancellation responses, including nested custom `data`, empty workflow results, and `false` cancellation. Direct cursor and Topic Subscription envelopes remain covered without an extra unwrap.
 - Safety: unwrapping is explicit at affected endpoint call sites and exactly one level deep. Missing or malformed wrappers flow into endpoint-specific validation so execution errors retain n8n item context and do not expose raw response bodies, payloads, credentials, or idempotency keys.
-- Live limitation: no post-fix Cloud retest was performed because the user closed the test instance. Actual n8n editor, pinned self-hosted, delivery, and Creator Portal evidence also remain pending.
+- Owner-observed evidence: the owner exercised the node in an actual local n8n editor against Novu Cloud. Before this fix, an empty workflow list and ordinary Topic responses exposed raw-envelope mismatches. After the fix the owner reported smoke behavior was “much better” and then that everything else was solid. Exact n8n/Novu versions and operation-by-operation results were not recorded, so complete live compatibility and delivery are not claimed.
+
+## Batch 9: release-candidate qualification and documentation
+
+- Status: implemented locally; awaiting review
+- Base: synchronized `main` at `00e97fe`
+- Package: remains private `@blackswampai/n8n-nodes-novu@0.1.0`
+
+### Delivered
+
+- Replaced both theme assets byte-for-byte with Novu's official immutable gradient favicon and protected its SHA-256 in deterministic and release checks.
+- Added sanitized importable customer-onboarding and topic opt-in/out examples using only Manual Trigger, Edit Fields, and this node.
+- Added structured actual-editor/Novu Cloud smoke instructions, proposed release notes, and a verification/submission checklist. README, compatibility, testing, branding, operation matrix, and release guidance are synchronized.
+- Recorded the public repository, HTTP 200 canonical homepage, npm `E404` availability evidence, and planned temporary-token-to-OIDC first-publication transition without enabling publication.
+
+### Evidence and limitations
+
+- Local validation on Node 24.18.0: frozen `npm ci` installed 734 packages; format/write and check, official n8n lint, strict production/test typecheck, 165 Vitest tests across 12 files, build, official source/built scan, private release audit, package boundary (60 files, 35,956 packed bytes, 191,789 unpacked bytes), workspace constructor/icon load, isolated packed install/load, and `git diff --check` passed. The isolated smoke required execution outside the managed sandbox after sandboxed process spawning returned `EPERM`.
+- Development advisories: `npm ci` reported upstream deprecations, three unapproved transitive install scripts, and 18 audit findings (12 moderate, 6 high); no runtime dependency was added. Existing missing `n8n-workflow` sourcemap-source warnings remain non-failing.
+- Existing owner smoke is limited to the observations recorded above. The owner also completed the requested source-checkout visual check in an actual local n8n editor, reported the official gradient icon was “perfect,” and authorized moving on; this confirms the requested picker/canvas/node-panel/credential-form surfaces in light and dark themes. Exact n8n version and screenshots were not recorded.
+- Exact versions, complete operation coverage, automated live tests, provider delivery, packed-tarball visual confirmation, pinned self-hosted Novu, and Creator Portal icon/version evidence remain incomplete or unrecorded. The broader structured editor/API checklist remains open.
+- The separate release audit is expected to report only three Batch 10 blockers: private package, absent `scan:published`, and absent `publish.yml`. Batch 9 intentionally does not remove them.
+
+## Next batch
+
+Batch 10: human release checkpoint, separately reviewed release preparation, publication authorization, npm/provenance verification, and Creator Portal submission.

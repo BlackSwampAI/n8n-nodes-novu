@@ -54,6 +54,11 @@ for (const path of [
 	'docs/testing.md',
 	'docs/BATCH_HANDOFF_TEMPLATE.md',
 	'docs/TEMPLATE_MIGRATIONS.md',
+	'docs/SMOKE_TESTS.md',
+	'docs/RELEASE_NOTES.md',
+	'docs/SUBMISSION_CHECKLIST.md',
+	'examples/customer-onboarding.json',
+	'examples/topic-opt-in-out.json',
 	'.github/pull_request_template.md',
 ]) {
 	if (!existsSync(resolve(root, path))) fail(`${path} is required`);
@@ -140,7 +145,7 @@ if (
 	marker.sourceRepository !== TEMPLATE_ORIGIN
 )
 	fail('Template v2.0.1 provenance marker is invalid');
-const expectedIconHash = '20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8';
+const expectedIconHash = 'cb594d2b275dc9308df325c348388b9395d7eae615b366ef9f9ba02267b08c82';
 const { createHash } = await import('node:crypto');
 for (const icon of ['nodes/Novu/novu.svg', 'nodes/Novu/novu.dark.svg'])
 	if (
@@ -224,10 +229,25 @@ if (isTemplateMode) {
 	].sort();
 	if (JSON.stringify(resources) !== JSON.stringify(expectedResources))
 		fail(`Novu resources must be exactly ${expectedResources.join(', ')}`);
-	for (const document of ['docs/api-matrix.md', 'docs/testing.md', 'docs/branding.md']) {
+	for (const document of [
+		'docs/api-matrix.md',
+		'docs/testing.md',
+		'docs/branding.md',
+		'docs/SMOKE_TESTS.md',
+		'docs/RELEASE_NOTES.md',
+		'docs/SUBMISSION_CHECKLIST.md',
+	]) {
 		const content = read(document);
 		if (content.length < 500 || /\b(?:TODO|CHANGEME)\b/i.test(content))
 			fail(`${document} must be completed rather than a placeholder`);
+	}
+	for (const example of ['examples/customer-onboarding.json', 'examples/topic-opt-in-out.json']) {
+		const workflow = JSON.parse(read(example));
+		if (workflow.active !== false) fail(`${example} must be inactive`);
+		if (!workflow.nodes?.some((node) => node.type === '@blackswampai/n8n-nodes-novu.novu'))
+			fail(`${example} must contain the Novu node`);
+		if (workflow.nodes?.some((node) => node.credentials))
+			fail(`${example} must not contain credentials`);
 	}
 	for (const safeguard of [
 		'optional package root',

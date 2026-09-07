@@ -7,7 +7,7 @@ assignees: ''
 ---
 
 - [ ] Scoped npm name rechecked immediately before release; current candidate is `@blackswampai/n8n-nodes-novu`
-- [ ] Canonical homepage `https://blackswampai.com/n8n-nodes/novu/` is provisioned and returns a successful public page (currently HTTP 404)
+- [ ] Public repository/default branch and canonical homepage content/links rechecked (both prerequisites were observed satisfied on 2026-09-06)
 - [ ] All template placeholders and unused examples removed
 - [ ] README installation, compatibility, credentials, operations, and license sections complete
 - [ ] `npm ci`, format check, lint, strict production/test typecheck, Vitest, build, release audit, and dry-run package checks pass
@@ -16,7 +16,7 @@ assignees: ''
 - [ ] Tag-only `publish.yml` restored with minimal permissions and current auth/version/provenance helpers
 - [ ] Publication and fresh read-only published-package/provenance/scanner verification are separate dependent jobs
 - [ ] Full release audit passes on the exact reviewed commit before tagging
-- [ ] Temporary granular npm token stored only as GitHub Actions secret `NPM_TOKEN` if first-package bootstrap requires it
+- [ ] Owner creates the planned temporary granular npm token and stores it only as GitHub Actions secret `NPM_TOKEN`; do not assume it exists or inspect secrets
 - [ ] Release commit is on `main` and CI is green
 - [ ] User explicitly authorizes release and annotated immutable `v0.1.0` tag points to the reviewed release commit
 - [ ] Publish workflow succeeds

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-describe('private Novu Batch 8 package safeguards', () => {
+describe('private Novu Batch 9 release-candidate safeguards', () => {
 	it('has final working identity while publication stays blocked', async () => {
 		const packageJson = JSON.parse(await read('package.json')) as {
 			name: string;
@@ -31,7 +31,7 @@ describe('private Novu Batch 8 package safeguards', () => {
 		});
 	});
 
-	it('advertises exactly the implemented Batch 8 resources', async () => {
+	it('advertises exactly the implemented release-candidate resources', async () => {
 		const [node, readme, status] = await Promise.all([
 			read('nodes/Novu/Novu.node.ts'),
 			read('README.md'),
@@ -85,7 +85,7 @@ describe('private Novu Batch 8 package safeguards', () => {
 		expect(ci).toContain('pull_request:');
 		expect(releaseCheck).toContain('CI must run build before');
 		expect(releaseCheck).toContain('publish workflow must remain absent');
-		expect(branding).toContain('dc9caee828136e25db2400433e2f67e2193f964c');
+		expect(branding).toContain('cf904665b2916e631c29f3187d6afe5169a7db89');
 		expect(matrix).toContain('Topic Subscription / Delete');
 		expect(testing).toContain('npm run smoke:install');
 		expect(migration).toContain('Template 2.0.1');
@@ -100,7 +100,7 @@ describe('private Novu Batch 8 package safeguards', () => {
 			read('nodes/Novu/novu.dark.svg'),
 			read('nodes/Novu/Novu.node.json'),
 		]);
-		const expected = '20e24ddd90a6e22d367544579645ed50d3a138760f07b2fa7ddcb763c69ba2d8';
+		const expected = 'cb594d2b275dc9308df325c348388b9395d7eae615b366ef9f9ba02267b08c82';
 		expect(createHash('sha256').update(light).digest('hex')).toBe(expected);
 		expect(createHash('sha256').update(dark).digest('hex')).toBe(expected);
 		expect(metadata).toContain('@blackswampai/n8n-nodes-novu.novu');

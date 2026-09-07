@@ -1,6 +1,6 @@
 # Novu API coverage and compatibility
 
-Reviewed against the official Novu API reference on September 5–6, 2026. “Documented” means contract research only; no Novu instance, credentials, n8n UI, or live request was used. Status cells distinguish operations implemented through Batch 8 from contracts deliberately deferred to later work.
+Reviewed against the official Novu API reference on September 5–6, 2026. “Documented” means contract research; representative deterministic mocks remain distinct from the owner's limited local n8n/Novu Cloud smoke observations recorded in `STATUS.md`. Exact live versions and operation-by-operation evidence are incomplete. Status cells distinguish implemented first-release operations from deferred scope.
 
 ## Compatibility baseline
 
