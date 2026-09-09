@@ -14,7 +14,7 @@ Checked against current n8n guidance on 2026-09-06: [node development](https://d
 - [ ] Inspect both theme icons from the packed artifact in a clean supported n8n instance.
 - [ ] Inspect the exact submitted package version/logo in Creator Portal.
 
-## Release evidence and 0.1.1 transition
+## Release evidence and 0.1.2 recovery
 
 - [x] GitHub repository observed public on 2026-09-06 (`isPrivate: false`, default branch `main`). Recheck at release.
 - [x] Canonical homepage observed HTTP 200 on 2026-09-06. Recheck content and links at release.
@@ -29,7 +29,8 @@ Checked against current n8n guidance on 2026-09-06: [node development](https://d
 - [x] GitHub `NPM_TOKEN` secret independently verified absent on 2026-09-09.
 - [x] On 2026-09-09, the owner confirmed npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, no environment, with direct npm publish allowed. Local unauthenticated npm could not independently query this configuration.
 - [x] Owner confirmed revocation of the temporary token used for 0.1.0.
-- [ ] After an authorized 0.1.1 publication, verify its exact npm version, provenance, scanner result, registry install/load, and GitHub release.
+- [x] Preserve immutable `v0.1.1` at commit `06fd46c`; run `34345618333` failed during authentication preparation before npm publish, and npm 0.1.1 remains unpublished. Do not alter or reuse the tag.
+- [ ] After an authorized 0.1.2 publication, verify its exact npm version, provenance, scanner result, registry install/load, and GitHub release.
 - [ ] Submit the exact intended version to Creator Portal and inspect the card version/logo; n8n verification is not yet complete.
 
-The 0.1.0 approval, tagging, and publication were completed under human authorization. The 0.1.1 authentication prerequisites are closed; immutable tag/publication authorization and Creator Portal submission remain human-only pending actions.
+The 0.1.0 approval, tagging, and publication were completed under human authorization. The failed pre-publication 0.1.1 tag remains immutable. Version 0.1.2 tag/publication authorization and Creator Portal submission remain human-only pending actions; 0.1.2 is not yet published or verified.
