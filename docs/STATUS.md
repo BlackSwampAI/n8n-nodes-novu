@@ -286,12 +286,13 @@ Batch 9: release-candidate qualification and documentation, including packed ins
 
 Batch 10: human release checkpoint, separately reviewed release preparation, publication authorization, npm/provenance verification, and Creator Portal submission.
 
-## Batch 10: release preparation
+## Batch 10: release and post-release evidence
 
-- Status: implemented locally; awaiting orchestrator and human review
-- Branch: `release/0.1.0-preparation`
-- Pull request: draft [#12](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/12)
-- Package: public release candidate `@blackswampai/n8n-nodes-novu@0.1.0`; no tag or publication has occurred
+- Status: released; repository, npm, provenance, official scanner, GitHub release, and published-package load gates complete
+- Release preparation: [PR #12](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/12) merged as `e494a9b06c7616fbd640022a3273b9f41ac0a2fa`
+- Final scanner retry-policy correction: [PR #13](https://github.com/BlackSwampAI/n8n-nodes-novu/pull/13) merged as final release commit `b043909cc7cfa2faa4d8e997407032f7a8e4ea73`; PR checks passed
+- Post-merge CI: [run 34072567276](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34072567276) passed Node 22.22.0 and Node 24 lanes on `b043909cc7cfa2faa4d8e997407032f7a8e4ea73`
+- Package: public `@blackswampai/n8n-nodes-novu@0.1.0`; n8n verification is not claimed
 
 ### Prepared
 
@@ -303,5 +304,9 @@ Batch 10: human release checkpoint, separately reviewed release preparation, pub
 ### Evidence and remaining gates
 
 - Local validation on Node 24.18.0: formatting/check, official n8n lint, strict production/test typecheck, 169 Vitest tests across 13 files, build, official source/built scan, public release audit in both local and exact `v0.1.0` tag contexts, package boundary (60 files, 35,977 packed bytes, 191,957 unpacked bytes), workspace and isolated packed-install loading of exactly 1 node and 1 credential, npm minimum-version verification with npm 11.16.0, and `git diff --check` passed. The isolated install and npm-version process checks required execution outside the managed sandbox after sandboxed child-process spawning returned `EPERM`. Existing missing `n8n-workflow` sourcemap-source warnings remain non-failing advisories.
-- PR/default-branch/tag CI, the immutable `v0.1.0` tag, Actions publication, npm version/latest/provenance, published scanner result, published package install/load, Trusted Publisher migration, token deletion/revocation, GitHub release, and Creator Portal submission/version/logo are future human-authorized or post-publication gates.
+- The annotated `v0.1.0` tag object `f92dfa7ff66f1dea56578b843787917834ff3039` peels to the reviewed release commit `b043909cc7cfa2faa4d8e997407032f7a8e4ea73`.
+- Publish workflow [run 34072798768](https://github.com/BlackSwampAI/n8n-nodes-novu/actions/runs/34072798768) published the package once. The one-time publish job passed, npm accepted public version 0.1.0 with signed provenance, and that publish job was not rerun. The first verifier attempt encountered a registry 404 before metadata was visible; after propagation, rerunning only the failed verifier produced a passing second attempt.
+- The official scanner reported exactly: “Package @blackswampai/n8n-nodes-novu@0.1.0 has passed all security checks”. Provenance passed and the source was fetched at `b043909`. `npm view` reports version and `latest` as 0.1.0 with matching repository, homepage, and MIT metadata, no runtime dependencies, host peer `n8n-workflow`, and SLSA predicate `https://slsa.dev/provenance/v1`.
+- A published-registry install using `--ignore-scripts --no-package-lock --omit=peer` succeeded; compiled loading registered exactly 1 node and 1 credential. The public, non-draft, non-prerelease [GitHub release](https://github.com/BlackSwampAI/n8n-nodes-novu/releases/tag/v0.1.0) is available.
+- Human-only post-release work remains: configure npm Trusted Publisher for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, with no environment; then delete the GitHub `NPM_TOKEN` secret and revoke the temporary granular token. Creator Portal submission for exact version 0.1.0 and card version/logo inspection also remain pending. Do not describe the node as n8n verified until n8n confirms it.
 - Existing limited local editor/Cloud and source-checkout icon observations remain as recorded in Batch 9. Exact live versions, complete operation coverage, delivery, packed-editor visuals, and pinned self-hosted evidence remain incomplete.
