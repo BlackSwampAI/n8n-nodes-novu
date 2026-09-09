@@ -1,5 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { workflowLocator } from './workflow.description';
+import { prepareCancel, receiveCancel } from './routing';
 
 const triggerDisplay = { show: { resource: ['notification'], operation: ['triggerWorkflow'] } };
 const cancelDisplay = { show: { resource: ['notification'], operation: ['cancelExecution'] } };
@@ -16,6 +17,11 @@ export const notificationProperties: INodeProperties[] = [
 				name: 'Cancel Execution',
 				value: 'cancelExecution',
 				action: 'Cancel a notification execution',
+				routing: {
+					request: { method: 'DELETE', url: '/v1/events/trigger' },
+					send: { preSend: [prepareCancel] },
+					output: { postReceive: [receiveCancel] },
+				},
 			},
 			{
 				name: 'Trigger Workflow',

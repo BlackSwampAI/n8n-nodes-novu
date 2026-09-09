@@ -1,4 +1,11 @@
 import type { INodeProperties } from 'n8n-workflow';
+import {
+	paginateSubscribers,
+	prepareSubscriber,
+	receiveSubscriber,
+	receiveSubscriberDelete,
+	receiveSubscriberList,
+} from './routing';
 
 const operationDisplay = { show: { resource: ['subscriber'] } };
 const itemOperations = ['createOrUpdate', 'get', 'update', 'delete'];
@@ -16,11 +23,53 @@ export const subscriberProperties: INodeProperties[] = [
 				name: 'Create or Update',
 				value: 'createOrUpdate',
 				action: 'Create or update a subscriber',
+				routing: {
+					request: { method: 'POST', url: '/v2/subscribers' },
+					send: { preSend: [prepareSubscriber] },
+					output: { postReceive: [receiveSubscriber] },
+				},
 			},
-			{ name: 'Delete', value: 'delete', action: 'Delete a subscriber' },
-			{ name: 'Get', value: 'get', action: 'Get a subscriber' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many subscribers' },
-			{ name: 'Update', value: 'update', action: 'Update a subscriber' },
+			{
+				name: 'Delete',
+				value: 'delete',
+				action: 'Delete a subscriber',
+				routing: {
+					request: { method: 'DELETE', url: '/v2/subscribers' },
+					send: { preSend: [prepareSubscriber] },
+					output: { postReceive: [receiveSubscriberDelete] },
+				},
+			},
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get a subscriber',
+				routing: {
+					request: { method: 'GET', url: '/v2/subscribers' },
+					send: { preSend: [prepareSubscriber] },
+					output: { postReceive: [receiveSubscriber] },
+				},
+			},
+			{
+				name: 'Get Many',
+				value: 'getMany',
+				action: 'Get many subscribers',
+				routing: {
+					request: { method: 'GET', url: '/v2/subscribers' },
+					send: { preSend: [prepareSubscriber] },
+					operations: { pagination: paginateSubscribers },
+					output: { postReceive: [receiveSubscriberList] },
+				},
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				action: 'Update a subscriber',
+				routing: {
+					request: { method: 'PATCH', url: '/v2/subscribers' },
+					send: { preSend: [prepareSubscriber] },
+					output: { postReceive: [receiveSubscriber] },
+				},
+			},
 		],
 		default: 'createOrUpdate',
 	},

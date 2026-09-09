@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Novu } from '../nodes/Novu/Novu.node';
 import { notificationProperties } from '../nodes/Novu/resources/notification.description';
+import { runDeclarative } from './declarative-harness';
 
 type Parameters = Record<string, unknown>;
 
@@ -24,8 +25,16 @@ const makeContext = (
 		helpers: { httpRequestWithAuthentication: vi.fn(request) },
 	}) as unknown as IExecuteFunctions;
 
-const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> =>
-	(await new Novu().execute.call(context))[0];
+const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> => {
+	if (context.getNodeParameter('operation', 0) === 'triggerWorkflow') {
+		return (
+			(await new Novu().customOperations!.notification.triggerWorkflow.call(
+				context,
+			)) as INodeExecutionData[][]
+		)[0];
+	}
+	return runDeclarative(context);
+};
 
 const trigger = (overrides: Parameters = {}): Parameters => ({
 	resource: 'notification',

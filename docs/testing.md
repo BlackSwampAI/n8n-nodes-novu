@@ -4,7 +4,7 @@ The package uses a layered evidence model. Passing a lower tier never implies a 
 
 ## Deterministic tiers
 
-- TypeScript Vitest tests cover helpers, metadata, per-item execution, malformed inputs/responses, paging, continuation, retry confinement, and scaffold/release invariants using documented response shapes and deterministic mocks.
+- TypeScript Vitest tests cover helpers, real declarative routing metadata and hooks, custom-operation execution, per-item expressions, malformed inputs/responses, function paging, continuation, retry confinement, and scaffold/release invariants using documented response shapes and deterministic mocks.
 - `npm run scan:source` runs the official n8n community-package scanner against both source patterns and built JavaScript/package metadata. Findings are release gates; scanner development advisories remain advisories unless the tool reports failure.
 - `npm run smoke:load` loads the registered node and credential constructors from the workspace build, verifies credential references, and validates packaged SVG/PNG icon confinement and SVG viewBoxes.
 - `npm run package:check` performs the public release-candidate audit and dry-run tarball allowlist check.
@@ -40,3 +40,7 @@ git diff --check
 - Creator Portal: applies only after authorized npm publication/submission; visually verify the exact submitted version and logo independently of npm/editor state.
 
 The owner exercised the node in a local n8n editor against Novu Cloud and reported the post-envelope-fix experience as much better and otherwise solid. The owner separately confirmed the requested source-checkout gradient icon surfaces in both themes as “perfect.” Exact versions, screenshots, packed-artifact visuals, and operation-by-operation results were not recorded; this does not satisfy the broader structured live/editor tier. No provider delivery, pinned self-hosted, or Creator Portal evidence exists. Use [the manual smoke checklist](SMOKE_TESTS.md) to close those gaps. See [project status](STATUS.md) for batch-specific evidence.
+
+The September 9 declarative-first refactor passed formatting, official n8n lint, strict typecheck, 181 deterministic Vitest tests across 14 files, build, official source scan, workspace loading, the 54-file package boundary, and isolated packed-package install/load outside the managed sandbox. Both load smokes registered exactly 1 node and 1 credential. The owner then ran a limited actual n8n editor smoke against their Novu Cloud instance: retrieving the available objects they could exercise and creating a topic succeeded, and the owner reported that the exercised behavior appeared to work as advertised. Exact n8n/Novu versions, screenshots, and operation-by-operation results were not recorded, so this observation does not establish complete live coverage, provider delivery, self-hosted compatibility, or Creator Portal behavior.
+
+The declarative resource suites resolve the real operation metadata and invoke its actual `preSend`, `postReceive`, and function-pagination hooks per item. They do not use removed programmatic executors. HTTP status sanitization is covered at hook level; n8n's actual routing-engine handling of status-free network failures, Continue On Fail, and its standard error-item shape remains an editor/integration evidence gap.

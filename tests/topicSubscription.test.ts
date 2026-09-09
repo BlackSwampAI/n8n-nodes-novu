@@ -1,6 +1,6 @@
-import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { describe, expect, it, vi } from 'vitest';
-import { Novu } from '../nodes/Novu/Novu.node';
+import { runDeclarative } from './declarative-harness';
 import { topicSubscriptionProperties } from '../nodes/Novu/resources/topicSubscription.description';
 
 type Params = Record<string, unknown>;
@@ -21,8 +21,7 @@ const ctx = (
 		continueOnFail: vi.fn().mockReturnValue(continuation),
 		helpers: { httpRequestWithAuthentication: vi.fn(request) },
 	}) as unknown as IExecuteFunctions;
-const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> =>
-	(await new Novu().execute.call(context))[0];
+const run = runDeclarative;
 const params = (operation: string, extra: Params = {}) => ({
 	resource: 'topicSubscription',
 	operation,

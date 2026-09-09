@@ -1,4 +1,11 @@
 import type { INodeProperties } from 'n8n-workflow';
+import {
+	paginateTopics,
+	prepareTopic,
+	receiveTopic,
+	receiveTopicDelete,
+	receiveTopicList,
+} from './routing';
 
 const itemOperations = ['createOrUpdate', 'get', 'update', 'delete'];
 const display = { show: { resource: ['topic'] } };
@@ -11,11 +18,57 @@ export const topicProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: display,
 		options: [
-			{ name: 'Create or Update', value: 'createOrUpdate', action: 'Create or update a topic' },
-			{ name: 'Delete', value: 'delete', action: 'Delete a topic' },
-			{ name: 'Get', value: 'get', action: 'Get a topic' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many topics' },
-			{ name: 'Update', value: 'update', action: 'Update a topic' },
+			{
+				name: 'Create or Update',
+				value: 'createOrUpdate',
+				action: 'Create or update a topic',
+				routing: {
+					request: { method: 'POST', url: '/v2/topics' },
+					send: { preSend: [prepareTopic] },
+					output: { postReceive: [receiveTopic] },
+				},
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				action: 'Delete a topic',
+				routing: {
+					request: { method: 'DELETE', url: '/v2/topics' },
+					send: { preSend: [prepareTopic] },
+					output: { postReceive: [receiveTopicDelete] },
+				},
+			},
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get a topic',
+				routing: {
+					request: { method: 'GET', url: '/v2/topics' },
+					send: { preSend: [prepareTopic] },
+					output: { postReceive: [receiveTopic] },
+				},
+			},
+			{
+				name: 'Get Many',
+				value: 'getMany',
+				action: 'Get many topics',
+				routing: {
+					request: { method: 'GET', url: '/v2/topics' },
+					send: { preSend: [prepareTopic] },
+					operations: { pagination: paginateTopics },
+					output: { postReceive: [receiveTopicList] },
+				},
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				action: 'Update a topic',
+				routing: {
+					request: { method: 'PATCH', url: '/v2/topics' },
+					send: { preSend: [prepareTopic] },
+					output: { postReceive: [receiveTopic] },
+				},
+			},
 		],
 		default: 'createOrUpdate',
 	},

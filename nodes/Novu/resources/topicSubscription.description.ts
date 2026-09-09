@@ -1,4 +1,10 @@
 import type { INodeProperties } from 'n8n-workflow';
+import {
+	paginateTopicSubscriptions,
+	prepareTopicSubscription,
+	receiveTopicSubscriptionList,
+	receiveTopicSubscriptionMutation,
+} from './routing';
 
 const display = { show: { resource: ['topicSubscription'] } };
 const mutationDisplay = {
@@ -13,9 +19,37 @@ export const topicSubscriptionProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: display,
 		options: [
-			{ name: 'Create', value: 'create', action: 'Create topic subscriptions' },
-			{ name: 'Delete', value: 'delete', action: 'Delete topic subscriptions' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many topic subscriptions' },
+			{
+				name: 'Create',
+				value: 'create',
+				action: 'Create topic subscriptions',
+				routing: {
+					request: { method: 'POST', url: '/v2/topics' },
+					send: { preSend: [prepareTopicSubscription] },
+					output: { postReceive: [receiveTopicSubscriptionMutation] },
+				},
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				action: 'Delete topic subscriptions',
+				routing: {
+					request: { method: 'DELETE', url: '/v2/topics' },
+					send: { preSend: [prepareTopicSubscription] },
+					output: { postReceive: [receiveTopicSubscriptionMutation] },
+				},
+			},
+			{
+				name: 'Get Many',
+				value: 'getMany',
+				action: 'Get many topic subscriptions',
+				routing: {
+					request: { method: 'GET', url: '/v2/topics' },
+					send: { preSend: [prepareTopicSubscription] },
+					operations: { pagination: paginateTopicSubscriptions },
+					output: { postReceive: [receiveTopicSubscriptionList] },
+				},
+			},
 		],
 		default: 'create',
 	},
