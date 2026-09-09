@@ -41,6 +41,8 @@ Local npm is unauthenticated and could not independently query this trust config
 
 The immutable `v0.1.1` tag at commit `06fd46c` must not be changed, deleted, or reused. Workflow run `34345618333` failed in Prepare npm authentication before npm publish because the setup-node sentinel was rejected; npm version 0.1.1 was never published. Recovery proceeds only as version 0.1.2 with its own reviewed commit and tag.
 
+Recovery 0.1.2 completed through the reviewed commit `8241b1434d2098ffdf4dd3002db467496be8d8e0` and immutable annotated tag. Publish workflow run `34348117075` published once through OIDC. Its first verifier exhausted bounded registry-propagation attempts; after metadata appeared, **Re-run failed jobs** reran only the verifier, which passed. This is the required pattern when publication has already succeeded; never rerun the successful publish job.
+
 ## Publish and verify
 
 The `publish` job runs all deterministic/package gates, prepares authentication, and invokes `npm run release` with provenance. The fresh dependent `verify-published` job is read-only and runs the official scanner against the exact published package/version. Only the publish job receives `id-token: write`.
