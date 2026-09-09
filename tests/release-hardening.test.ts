@@ -11,6 +11,9 @@ const { prepareNpmAuth } = await import('../scripts/prepare-npm-auth.mjs');
 const { isDeterministicSecurityFailure, isLikelyPropagationFailure } =
 	// @ts-expect-error Operational release policy helper intentionally remains JavaScript.
 	await import('../scripts/scan-policy.mjs');
+const { isSupportedNodeInstance } =
+	// @ts-expect-error Operational package smoke helper intentionally remains JavaScript.
+	await import('../scripts/node-load-smoke.mjs');
 
 const temporaryDirectories: string[] = [];
 afterEach(() => {
@@ -81,5 +84,53 @@ describe('published scanner retry policy', () => {
 			expect(isLikelyPropagationFailure(output, packageSpec)).toBe(false);
 			expect(isDeterministicSecurityFailure(output, packageSpec)).toBe(true);
 		}
+	});
+});
+
+describe('compiled node architecture detection', () => {
+	const description = (properties: unknown[] = []) => ({
+		displayName: 'Fixture',
+		name: 'fixture',
+		properties,
+		version: 1,
+	});
+
+	it.each(['execute', 'poll', 'trigger', 'webhook'])('accepts programmatic %s nodes', (method) => {
+		expect(isSupportedNodeInstance({ description: description(), [method]: () => undefined })).toBe(
+			true,
+		);
+	});
+
+	it('accepts fully declarative routing without custom operations', () => {
+		expect(
+			isSupportedNodeInstance({
+				description: description([
+					{
+						name: 'operation',
+						options: [{ name: 'Get', routing: { request: { method: 'GET', url: '/v1/get' } } }],
+					},
+				]),
+			}),
+		).toBe(true);
+	});
+
+	it('accepts nodes whose only executable path is a custom operation', () => {
+		expect(
+			isSupportedNodeInstance({
+				customOperations: { notification: { trigger: () => undefined } },
+				description: description(),
+			}),
+		).toBe(true);
+	});
+
+	it('rejects arbitrary constructors and empty architecture markers', () => {
+		for (const instance of [
+			{},
+			{ description: description() },
+			{ customOperations: { notification: {} }, description: description() },
+			{ description: description([{ routing: {} }]) },
+			{ description: { name: 'fixture', properties: [], version: 1 }, execute: () => undefined },
+		])
+			expect(isSupportedNodeInstance(instance)).toBe(false);
 	});
 });

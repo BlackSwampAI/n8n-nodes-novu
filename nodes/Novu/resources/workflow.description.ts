@@ -1,4 +1,10 @@
 import type { INodeProperties } from 'n8n-workflow';
+import {
+	paginateWorkflows,
+	prepareWorkflow,
+	receiveWorkflow,
+	receiveWorkflowList,
+} from './routing';
 
 export const WORKFLOW_STATUS_OPTIONS = [
 	{ name: 'Active', value: 'ACTIVE' },
@@ -44,8 +50,27 @@ export const workflowProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: { show: { resource: ['workflow'] } },
 		options: [
-			{ name: 'Get', value: 'get', action: 'Get a workflow' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many workflows' },
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get a workflow',
+				routing: {
+					request: { method: 'GET', url: '/v2/workflows' },
+					send: { preSend: [prepareWorkflow] },
+					output: { postReceive: [receiveWorkflow] },
+				},
+			},
+			{
+				name: 'Get Many',
+				value: 'getMany',
+				action: 'Get many workflows',
+				routing: {
+					request: { method: 'GET', url: '/v2/workflows' },
+					send: { preSend: [prepareWorkflow] },
+					operations: { pagination: paginateWorkflows },
+					output: { postReceive: [receiveWorkflowList] },
+				},
+			},
 		],
 		default: 'get',
 	},

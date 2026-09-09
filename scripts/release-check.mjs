@@ -332,6 +332,9 @@ if (isTemplateMode) {
 		'createRequire',
 		'referencedCredentials',
 		'viewBox',
+		'isSupportedNodeInstance',
+		'hasDeclarativeRouting',
+		'hasCustomOperations',
 	]) {
 		const smoke = read('scripts/node-load-smoke.mjs');
 		if (safeguard === 'optional package root') {

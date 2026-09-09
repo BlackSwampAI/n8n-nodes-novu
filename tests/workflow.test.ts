@@ -2,6 +2,7 @@ import type { IExecuteFunctions, IHttpRequestOptions, ILoadOptionsFunctions } fr
 import { describe, expect, it, vi } from 'vitest';
 import { Novu } from '../nodes/Novu/Novu.node';
 import { workflowProperties } from '../nodes/Novu/resources/workflow.description';
+import { runDeclarative } from './declarative-harness';
 
 type Params = Record<string, unknown>;
 const workflow = (id: string, name = `Workflow ${id}`) => ({
@@ -36,7 +37,7 @@ const loader = (request: (type: string, options: IHttpRequestOptions) => Promise
 		getNode: vi.fn().mockReturnValue({ name: 'Novu', type: 'novu', typeVersion: 1 }),
 		helpers: { httpRequestWithAuthentication: vi.fn(request) },
 	}) as unknown as ILoadOptionsFunctions;
-const run = async (value: IExecuteFunctions) => (await new Novu().execute.call(value))[0];
+const run = runDeclarative;
 
 describe('Workflow metadata and Get', () => {
 	it('exposes only Get/Get Many and a searchable manual locator', () => {

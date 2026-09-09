@@ -1,7 +1,7 @@
-import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Novu } from '../nodes/Novu/Novu.node';
+import { runDeclarative } from './declarative-harness';
 import { subscriberPreferenceProperties } from '../nodes/Novu/resources/subscriberPreference.description';
 
 type Parameters = Record<string, unknown>;
@@ -22,8 +22,7 @@ const makeContext = (
 		continueOnFail: vi.fn().mockReturnValue(continueOnFail),
 		helpers: { httpRequestWithAuthentication: vi.fn(request) },
 	}) as unknown as IExecuteFunctions;
-const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> =>
-	(await new Novu().execute.call(context))[0];
+const run = runDeclarative;
 const envelope = {
 	global: { enabled: true, channels: { email: true, tool: false }, schedule: { isEnabled: false } },
 	workflows: [{ workflow: { identifier: 'order' }, channels: { sms: false }, overrides: {} }],

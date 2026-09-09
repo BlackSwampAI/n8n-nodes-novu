@@ -1,4 +1,5 @@
 import type { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
+import { preparePreferences, receivePreferences } from './routing';
 
 const display = { show: { resource: ['subscriberPreference'] } };
 const updateDisplay = { show: { resource: ['subscriberPreference'], operation: ['update'] } };
@@ -16,8 +17,26 @@ export const subscriberPreferenceProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: display,
 		options: [
-			{ name: 'Get', value: 'get', action: 'Get subscriber preferences' },
-			{ name: 'Update', value: 'update', action: 'Update subscriber preferences' },
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get subscriber preferences',
+				routing: {
+					request: { method: 'GET', url: '/v2/subscribers' },
+					send: { preSend: [preparePreferences] },
+					output: { postReceive: [receivePreferences] },
+				},
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				action: 'Update subscriber preferences',
+				routing: {
+					request: { method: 'PATCH', url: '/v2/subscribers' },
+					send: { preSend: [preparePreferences] },
+					output: { postReceive: [receivePreferences] },
+				},
+			},
 		],
 		default: 'get',
 	},

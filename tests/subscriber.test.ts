@@ -1,7 +1,7 @@
-import type { IExecuteFunctions, IHttpRequestOptions, INodeExecutionData } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Novu } from '../nodes/Novu/Novu.node';
+import { runDeclarative } from './declarative-harness';
 
 type Parameters = Record<string, unknown>;
 
@@ -23,8 +23,7 @@ const makeContext = (
 		helpers: { httpRequestWithAuthentication: vi.fn(request) },
 	}) as unknown as IExecuteFunctions;
 
-const run = async (context: IExecuteFunctions): Promise<INodeExecutionData[]> =>
-	(await new Novu().execute.call(context))[0];
+const run = runDeclarative;
 
 const subscriber = (subscriberId: string) => ({ subscriberId, data: { active: false, score: 0 } });
 const raw = (data: unknown) => ({ data });

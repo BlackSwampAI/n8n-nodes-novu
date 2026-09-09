@@ -82,33 +82,10 @@ const assertTriggerResponse = (
 	return value;
 };
 
-export const executeNotificationOperation = async (
+const executeTriggerItem = async (
 	context: IExecuteFunctions,
-	operation: string,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> => {
-	if (operation === 'cancelExecution') {
-		const transactionId = requiredString(
-			context,
-			'cancelTransactionId',
-			'Transaction ID',
-			itemIndex,
-		);
-		const response = unwrapNovuDataEnvelope(
-			await novuApiRequest<unknown>(context, {
-				method: 'DELETE',
-				version: 'v1',
-				pathSegments: ['events', 'trigger', transactionId],
-				itemIndex,
-			}),
-		);
-		if (typeof response !== 'boolean')
-			throw localError(context, 'Novu returned a malformed cancellation response', itemIndex);
-		return [{ json: { transactionId, cancelled: response }, pairedItem: itemIndex }];
-	}
-	if (operation !== 'triggerWorkflow') {
-		throw localError(context, `Unsupported Notification operation: ${operation}`, itemIndex);
-	}
 	const workflowIdentifier = normalizeWorkflowIdentifier(
 		context,
 		context.getNodeParameter('workflowIdentifier', itemIndex),
@@ -169,3 +146,23 @@ export const executeNotificationOperation = async (
 	);
 	return [{ json: assertTriggerResponse(context, response, itemIndex), pairedItem: itemIndex }];
 };
+
+export async function executeTriggerWorkflow(
+	this: IExecuteFunctions,
+): Promise<INodeExecutionData[][]> {
+	const items = this.getInputData();
+	const output: INodeExecutionData[] = [];
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		try {
+			output.push(...(await executeTriggerItem(this, itemIndex)));
+		} catch (error) {
+			if (!this.continueOnFail())
+				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+			output.push({
+				json: { error: error instanceof Error ? error.message : 'Unknown Novu error' },
+				pairedItem: itemIndex,
+			});
+		}
+	}
+	return [output];
+}
