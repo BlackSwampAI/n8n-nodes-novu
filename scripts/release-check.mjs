@@ -159,6 +159,8 @@ for (const path of [
 const npmAuthHelper = read('scripts/prepare-npm-auth.mjs');
 if (!npmAuthHelper.includes('Token authentication is forbidden'))
 	fail('npm authentication preparation must fail closed when a token is present');
+if (!npmAuthHelper.includes('XXXXX-XXXXX-XXXXX-XXXXX') || !npmAuthHelper.includes('GITHUB_ENV'))
+	fail('npm authentication preparation must safely clear only the setup-node sentinel');
 if (!npmAuthHelper.includes('_authToken=\\$\\{NODE_AUTH_TOKEN\\}'))
 	fail('npm authentication preparation must remove only setup-node empty placeholder');
 if (!publishedScanner.includes('has passed all security checks'))

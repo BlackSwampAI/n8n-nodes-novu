@@ -1,6 +1,6 @@
 {
 	"name": "@blackswampai/n8n-nodes-novu",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"packageManager": "npm@11.19.0",
 	"description": "Independent n8n community node for Novu notification workflows",
 	"license": "MIT",

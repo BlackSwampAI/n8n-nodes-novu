@@ -47,14 +47,52 @@ describe('npm authentication preparation', () => {
 			'registry=https://registry.npmjs.org/\nprovenance=true\n',
 		);
 	});
+
+	it.each([undefined, ''])('accepts an absent or empty token (%s)', (token) => {
+		const directory = mkdtempSync(join(tmpdir(), 'novu-auth-test-'));
+		temporaryDirectories.push(directory);
+		const config = join(directory, '.npmrc');
+		writeFileSync(config, 'provenance=true\n');
+		expect(prepareNpmAuth({ NODE_AUTH_TOKEN: token, NPM_CONFIG_USERCONFIG: config })).toBe('oidc');
+		expect(readFileSync(config, 'utf8')).toBe('provenance=true\n');
+	});
+
+	it('accepts and clears only the exact setup-node sentinel for subsequent steps', () => {
+		const directory = mkdtempSync(join(tmpdir(), 'novu-auth-test-'));
+		temporaryDirectories.push(directory);
+		const config = join(directory, '.npmrc');
+		const githubEnvironment = join(directory, 'github-env');
+		writeFileSync(
+			config,
+			'registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\nprovenance=true\n',
+		);
+		writeFileSync(githubEnvironment, 'EXISTING=value\n');
+		expect(
+			prepareNpmAuth({
+				GITHUB_ENV: githubEnvironment,
+				NODE_AUTH_TOKEN: 'XXXXX-XXXXX-XXXXX-XXXXX',
+				NPM_CONFIG_USERCONFIG: config,
+			}),
+		).toBe('oidc');
+		expect(readFileSync(config, 'utf8')).toBe(
+			'registry=https://registry.npmjs.org/\nprovenance=true\n',
+		);
+		expect(readFileSync(githubEnvironment, 'utf8')).toBe('EXISTING=value\nNODE_AUTH_TOKEN=\n');
+	});
+
+	it('requires GitHub environment propagation when the sentinel is present', () => {
+		expect(() => prepareNpmAuth({ NODE_AUTH_TOKEN: 'XXXXX-XXXXX-XXXXX-XXXXX' })).toThrow(
+			'GITHUB_ENV is required',
+		);
+	});
 });
 
 describe('published scanner retry policy', () => {
-	const packageSpec = '@blackswampai/n8n-nodes-novu@0.1.1';
+	const packageSpec = '@blackswampai/n8n-nodes-novu@0.1.2';
 
 	it('retries only exact known propagation failures for this version', () => {
 		for (const reason of [
-			'Reason: No package metadata found for version 0.1.1',
+			'Reason: No package metadata found for version 0.1.2',
 			"Reason: Could not fetch the source repository recorded in the package's npm provenance (Request failed with status code 404).",
 		])
 			expect(
@@ -65,7 +103,7 @@ describe('published scanner retry policy', () => {
 			).toBe(true);
 		expect(
 			isLikelyPropagationFailure(
-				'Reason: No package metadata found for version 0.1.0',
+				'Reason: No package metadata found for version 0.1.1',
 				packageSpec,
 			),
 		).toBe(false);

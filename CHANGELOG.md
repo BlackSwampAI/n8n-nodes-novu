@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-## 0.1.1 - 2026-09-09
+## 0.1.2 - 2026-09-09
+
+- Recover the unpublished 0.1.1 release with fail-closed handling for actions/setup-node's exact authentication sentinel during OIDC preparation.
+- Clear that sentinel for subsequent GitHub Actions steps while preserving all unrelated npm configuration and retaining tokenless Trusted Publishing.
+
+## 0.1.1 - 2026-09-09 (tagged, not published)
 
 - Refactor 18 ordinary operations to n8n declarative routing while keeping public parameters, API requests, and successful output contracts unchanged.
 - Keep Trigger Workflow as the sole custom operation so its bounded, idempotency-protected retry policy remains isolated.
