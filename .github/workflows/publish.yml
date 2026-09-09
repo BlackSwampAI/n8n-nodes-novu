@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '24'
           registry-url: https://registry.npmjs.org
-          cache: npm
+          package-manager-cache: false
       - name: Use the lockfile npm version
         run: npm install --global npm@11.19.0
       - run: node scripts/verify-npm-version.mjs
@@ -33,13 +33,8 @@ jobs:
       - run: npm run smoke:install
       - name: Prepare npm authentication
         run: node scripts/prepare-npm-auth.mjs
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish from the immutable tag
         run: npm run release
-        env:
-          # Bootstrap only the first publication, then remove the secret after enabling OIDC.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   verify-published:
     needs: publish

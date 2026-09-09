@@ -23,17 +23,19 @@ git diff --check
 
 Require green ordinary CI on that commit, inspect the packed artifact in a supported disposable n8n instance, and review the release notes and remaining evidence gaps. The user must explicitly authorize the release before an annotated `v<version>` tag is created and pushed.
 
-## First publication authentication
+## Trusted Publishing authentication
 
-Because npm requires the package to exist before Trusted Publisher setup, the first publication uses the existing narrowly scoped temporary granular token in GitHub Actions secret `NPM_TOKEN`. The workflow preserves token configuration when the secret is present. Future OIDC runs remove only setup-node's literal empty token placeholder; they never broadly delete npm configuration.
+This existing package publishes through npm Trusted Publishing only. The GitHub `NPM_TOKEN` secret was independently verified absent on September 9, 2026. The workflow contains no token fallback or token injection. Its authentication helper fails closed if a nonempty `NODE_AUTH_TOKEN` appears and otherwise removes only setup-node's literal empty token placeholder; it never broadly deletes npm configuration.
 
-Immediately after the first successful publication:
+Before authorizing a tag, the owner must confirm npm Trusted Publishing is configured for:
 
-1. Configure npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, with no GitHub Environment.
-2. Delete the GitHub `NPM_TOKEN` secret.
-3. Revoke the temporary granular npm token.
+- owner `BlackSwampAI`
+- repository `n8n-nodes-novu`
+- workflow `publish.yml`
+- no GitHub Environment
+- direct npm publish allowed
 
-Those credential changes are human-only. Never print, inspect, or store the token elsewhere.
+Local npm is unauthenticated and cannot query this trust configuration, so owner confirmation is a human-only blocking gate. Revocation of the temporary 0.1.0 token remains unconfirmed and must also be closed by the owner. Never print, inspect, or store credentials.
 
 ## Publish and verify
 

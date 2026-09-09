@@ -22,15 +22,15 @@ afterEach(() => {
 });
 
 describe('npm authentication preparation', () => {
-	it('preserves token bootstrap configuration', () => {
+	it('rejects token authentication', () => {
 		const directory = mkdtempSync(join(tmpdir(), 'novu-auth-test-'));
 		temporaryDirectories.push(directory);
 		const config = join(directory, '.npmrc');
 		const contents = '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\nprovenance=true\n';
 		writeFileSync(config, contents);
-		expect(prepareNpmAuth({ NODE_AUTH_TOKEN: 'present', NPM_CONFIG_USERCONFIG: config })).toBe(
-			'token',
-		);
+		expect(() =>
+			prepareNpmAuth({ NODE_AUTH_TOKEN: 'present', NPM_CONFIG_USERCONFIG: config }),
+		).toThrow('Token authentication is forbidden');
 		expect(readFileSync(config, 'utf8')).toBe(contents);
 	});
 
@@ -50,11 +50,11 @@ describe('npm authentication preparation', () => {
 });
 
 describe('published scanner retry policy', () => {
-	const packageSpec = '@blackswampai/n8n-nodes-novu@0.1.0';
+	const packageSpec = '@blackswampai/n8n-nodes-novu@0.1.1';
 
 	it('retries only exact known propagation failures for this version', () => {
 		for (const reason of [
-			'Reason: No package metadata found for version 0.1.0',
+			'Reason: No package metadata found for version 0.1.1',
 			"Reason: Could not fetch the source repository recorded in the package's npm provenance (Request failed with status code 404).",
 		])
 			expect(
@@ -65,7 +65,7 @@ describe('published scanner retry policy', () => {
 			).toBe(true);
 		expect(
 			isLikelyPropagationFailure(
-				'Reason: No package metadata found for version 0.1.1',
+				'Reason: No package metadata found for version 0.1.0',
 				packageSpec,
 			),
 		).toBe(false);

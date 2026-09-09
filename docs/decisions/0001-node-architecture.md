@@ -21,8 +21,8 @@ The API is mostly request/response oriented, so n8n's declarative engine can own
 
 ## Sources
 
-- [n8n node file structure](https://docs.n8n.io/integrations/creating-nodes/build/reference/node-base-files/structure/)
-- [n8n verification guidelines](https://docs.n8n.io/integrations/creating-nodes/build/reference/verification-guidelines/)
-- [n8n community-node submission](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/)
+- [n8n node file structure](https://docs.n8n.io/connect/create-nodes/build-your-node/reference/base-files/structure/)
+- [n8n verification guidelines](https://docs.n8n.io/connect/create-nodes/build-your-node/reference/verification-guidelines/)
+- [n8n community-node submission](https://docs.n8n.io/connect/create-nodes/deploy-your-node/submit-community-nodes/)
 - [Novu API overview](https://docs.novu.co/api-reference)
 - [Novu webhooks](https://docs.novu.co/platform/integrations/webhooks)
