@@ -27,9 +27,9 @@ Checked against current n8n guidance on 2026-09-06: [node development](https://d
 - [x] The authorized immutable annotated `v0.1.0` tag peels to the reviewed commit; Actions published once. Only the initially failed verifier was rerun after registry metadata propagation.
 - [x] Verified npm version/latest 0.1.0, signed SLSA provenance, official scanner success, published-registry install/load, and the public GitHub release.
 - [x] GitHub `NPM_TOKEN` secret independently verified absent on 2026-09-09.
-- [ ] Owner confirms npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, no environment, with direct npm publish allowed. Local unauthenticated npm cannot query this configuration; 0.1.1 tagging/publication remains blocked until confirmation.
-- [ ] Confirm revocation of the temporary token used for 0.1.0.
+- [x] On 2026-09-09, the owner confirmed npm Trusted Publishing for owner `BlackSwampAI`, repository `n8n-nodes-novu`, workflow `publish.yml`, no environment, with direct npm publish allowed. Local unauthenticated npm could not independently query this configuration.
+- [x] Owner confirmed revocation of the temporary token used for 0.1.0.
 - [ ] After an authorized 0.1.1 publication, verify its exact npm version, provenance, scanner result, registry install/load, and GitHub release.
 - [ ] Submit the exact intended version to Creator Portal and inspect the card version/logo; n8n verification is not yet complete.
 
-The 0.1.0 approval, tagging, and publication were completed under human authorization. Trusted Publisher confirmation, temporary-token revocation, 0.1.1 authorization/publication, and Creator Portal submission remain human-only pending actions.
+The 0.1.0 approval, tagging, and publication were completed under human authorization. The 0.1.1 authentication prerequisites are closed; immutable tag/publication authorization and Creator Portal submission remain human-only pending actions.

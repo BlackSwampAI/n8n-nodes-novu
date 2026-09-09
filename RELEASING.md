@@ -27,7 +27,7 @@ Require green ordinary CI on that commit, inspect the packed artifact in a suppo
 
 This existing package publishes through npm Trusted Publishing only. The GitHub `NPM_TOKEN` secret was independently verified absent on September 9, 2026. The workflow contains no token fallback or token injection. Its authentication helper fails closed if a nonempty `NODE_AUTH_TOKEN` appears and otherwise removes only setup-node's literal empty token placeholder; it never broadly deletes npm configuration.
 
-Before authorizing a tag, the owner must confirm npm Trusted Publishing is configured for:
+On September 9, 2026, the owner confirmed npm Trusted Publishing is configured for:
 
 - owner `BlackSwampAI`
 - repository `n8n-nodes-novu`
@@ -35,7 +35,7 @@ Before authorizing a tag, the owner must confirm npm Trusted Publishing is confi
 - no GitHub Environment
 - direct npm publish allowed
 
-Local npm is unauthenticated and cannot query this trust configuration, so owner confirmation is a human-only blocking gate. Revocation of the temporary 0.1.0 token remains unconfirmed and must also be closed by the owner. Never print, inspect, or store credentials.
+Local npm is unauthenticated and could not independently query this trust configuration; this is owner-confirmed evidence. The owner also confirmed that the temporary granular token used for 0.1.0 has been revoked, and the GitHub `NPM_TOKEN` secret was independently verified absent. Authentication prerequisites are therefore closed. Never print, inspect, or store credentials. Immutable tagging and publication still require separate post-merge human authorization.
 
 ## Publish and verify
 
