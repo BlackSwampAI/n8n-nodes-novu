@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.1 - 2026-09-09
+
+- Refactor 18 ordinary operations to n8n declarative routing while keeping public parameters, API requests, and successful output contracts unchanged.
+- Keep Trigger Workflow as the sole custom operation so its bounded, idempotency-protected retry policy remains isolated.
+- Adopt n8n's standard declarative continuation and error behavior for ordinary operations.
+- Harden compiled package loading for declarative and operation-specific custom node architectures.
+
 ## 0.1.0 - 2026-09-06
 
 - Establish the private Batch 1 Novu package scaffold, API contract inventory, and architecture record.

@@ -127,6 +127,8 @@ if (/id-token:\s*write/.test(publishPreamble))
 	fail('id-token: write must be scoped to the publish job');
 if (!/id-token:\s*write/.test(publishJob) || !/contents:\s*read/.test(publishJob))
 	fail('publish job permissions are incomplete');
+if (!publishJob.includes('package-manager-cache: false'))
+	fail('publish must disable setup-node package-manager caching');
 if (
 	!/needs:\s*publish/.test(verifyPublishedJob) ||
 	!verifyPublishedJob.includes('actions/checkout@v6') ||
@@ -145,8 +147,8 @@ if (publishJob.includes('npm run scan:published') || verifyPublishedJob.includes
 	fail('publication and published verification must remain separate jobs');
 if (/id-token:\s*write/.test(verifyPublishedJob))
 	fail('verify-published must not receive id-token: write');
-if (!publishWorkflow.includes('secrets.NPM_TOKEN'))
-	fail('publish must retain first-publication token bootstrap support');
+if (/NPM_TOKEN|NODE_AUTH_TOKEN|secrets\./.test(publishWorkflow))
+	fail('publish must use OIDC only and contain no token or secret references');
 for (const path of [
 	'scripts/prepare-npm-auth.mjs',
 	'scripts/verify-npm-version.mjs',
@@ -154,6 +156,11 @@ for (const path of [
 	'scripts/scan-policy.mjs',
 ])
 	if (!existsSync(resolve(root, path))) fail(`${path} is required`);
+const npmAuthHelper = read('scripts/prepare-npm-auth.mjs');
+if (!npmAuthHelper.includes('Token authentication is forbidden'))
+	fail('npm authentication preparation must fail closed when a token is present');
+if (!npmAuthHelper.includes('_authToken=\\$\\{NODE_AUTH_TOKEN\\}'))
+	fail('npm authentication preparation must remove only setup-node empty placeholder');
 if (!publishedScanner.includes('has passed all security checks'))
 	fail('published scan must require explicit official scanner success');
 if (

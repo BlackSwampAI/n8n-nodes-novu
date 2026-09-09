@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export function prepareNpmAuth(environment = process.env) {
-	if (environment.NODE_AUTH_TOKEN) return 'token';
+	if (environment.NODE_AUTH_TOKEN)
+		throw new Error('Token authentication is forbidden; publish through npm Trusted Publishing');
 	const userConfig = environment.NPM_CONFIG_USERCONFIG;
 	if (!userConfig || !existsSync(userConfig)) return 'oidc';
 	const contents = readFileSync(userConfig, 'utf8');
@@ -18,5 +19,5 @@ export function prepareNpmAuth(environment = process.env) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
 	const mode = prepareNpmAuth();
-	console.log(`npm authentication prepared for ${mode === 'token' ? 'token bootstrap' : 'OIDC'}`);
+	console.log(`npm authentication prepared for ${mode.toUpperCase()}`);
 }
